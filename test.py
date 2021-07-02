@@ -3,16 +3,18 @@ import os
 import datetime
 import re
 from typing import AsyncGenerator
+import random
+import string
 
 cmdExeList = list()
-cmdExeList.clear
+convertMesseage = list()
 #!dstPath出力パス,srcPath入力パス,srcDir入力ディレクトリ
 suffix = '.mcfunction'
 defaultdstPath = 'converted'
 
 args = sys.argv
 try:
-    srcPath = args[1]
+    srcPath = args[1].replace('\\','/')
 except:
     print("変換ファイルパスを入力")
     srcPath = input()
@@ -32,6 +34,12 @@ finally:
     dstPath = dstPath + suffix
     if dstPath.count('.mcfunction') == 2:
         dstPath = dstPath.replace('.mcfunction{2}', '.mcfunction')
+
+try:
+    nameSpace = args[3]
+except:
+    print("datapackのネームスペースを入力(ファイルパスから認識します)")
+    nameSpace = input()
 
 # ファイルのディレクトリ
 srcDir = os.path.split(srcPath)[0]
@@ -254,8 +262,46 @@ def Normal_convert(cmdLine,selectorList,convType):
             ncResult += ' levels '
         else:
             ncResult += ' points '
+    elif cmdLine.startswith("tp") or cmdLine.startswith("teleport"):
+        print("[nc]tp/teleportコマンドを検証します。")
+        if cmdLine.count('facing') == 1:
+            ncResult = cmdLine.replace('facing ','facing entity ')
+            print("[nc]facingにentity属性を追加しました。")
+        else:
+            ncResult = cmdLine
+            print("[nc]tp/teleportコマンドに変換は不要です。")
+    elif cmdLine.startswith("scoreboard"):
+        print("[nc]scoreboardコマンドを検証します。")
+        if cmdLine.count('random') == 1:
+            print("[nc]scoreboardコマンドで乱数を生成することが出来ません。このファイルと同じ階層にフォルダを作成し乱数を生成する関数を新たに作成します。")
+            randomString = 'rnumber_'
+            randomString += ''.join([random.choice(string.digits + string.ascii_lowercase) for i in range(8)])
+            os.mkdir(srcDir + '/' + randomString)
+
+            if srcDir.count(nameSpace) >= 1:
+                print("[nc]ネームスペースを確認")
+                randomRangeMin = int(re.search(r'\s.?[0-9]+',cmdLine).group(0))
+                cmdLine = cmdLine.replace(str(randomRangeMin),'')
+                randomRangeMax = int(re.search(r'\s.?[0-9]+',cmdLine).group(0))
+                cmdLine = cmdLine.replace(str(randomRangeMax),'')
+                getScoreboardName = cmdLine.replace('scoreboard players random SELECTOR_ ','').replace(' ','')
+                cmdFunctionString = srcDir[srcDir.find(nameSpace):].replace('/function','')
+                functionMake = list()
+                functionMake.clear
+                functionMake.append('scoreboard objectives add random dummy\n')
+                [functionMake.append('summon minecraft:armor_stand ~ ~5 ~ {NoGravity:1b,Invulnerable:1b,Invisible:1b,Tags:["randomA.' + randomString + '"]}\n') for i in range(randomRangeMin,randomRangeMax)]
+                functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6] random 0\n')
+                [functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6,scores={random=0},limit=1,sort=random] random ' + str(i) + '\n') for i in range(randomRangeMin,randomRangeMax)]
+                functionMake.append('scoreboard players operation __' + randomString + '__ random = @e[tag=randomA.' + randomString + ',dy=6,sort=random,limit=1] random\n')
+                functionMake.append('kill @e[tag=randomA.' + randomString + ']\n')
+                functionMake.append('scoreboard players operation ' + str(selectorList[0]) + ' ' + getScoreboardName + ' = __' + randomString + '__ random')
+                functionText = open(srcDir + '/' + randomString + '/' + randomString + '.mcfunction', 'a', encoding='UTF-8')
+                functionText.writelines(functionMake)
+                functionText.close
+            cmdLine = 'function ' + cmdFunctionString + '/' + randomString
+        ncResult = cmdLine
     else:
-        print("[nc]変換は必要ありません。")
+        print("[nc]形式の変換は必要ありません。")
         ncResult = cmdLine
 
     selectorList = list(reversed(selectorList))
@@ -264,7 +310,7 @@ def Normal_convert(cmdLine,selectorList,convType):
         ncResult = ncResult.replace('SELECTOR_',selectorList[i],1)
         print("[nc]セレクターを置換しました。 --> " + ncResult)
     #######ここで何故かセレクターを置換してくれないので明日やる
-            
+    print("ncResult --> " + ncResult)
     return ncResult
 #####################################
 def type_convert(cmdEnume,convType):
@@ -319,6 +365,11 @@ def type_convert(cmdEnume,convType):
             if separatePos != -1:
                 print("[type_convert]分離コマンド --> " + ALL_COMMAND[i-1] + "/ separatePos = " + str(separatePos))
                 break
+            elif i == 1:
+                TCmode= False
+                convertMesseage.append('NoFoundMinecraftCommandFromExecute / line:' + str(line) + ' ' + str(cmdEnume))
+                result = '#NoFoundMinecraftCommandFromExecute'
+                return result,TCmode
         executeResultCmd = cmdEnume[separatePos:]
         cmdEnume = cmdEnume[:separatePos-1]
         #分離させた通常コマンドをListに入れてその分を削除
@@ -359,6 +410,11 @@ def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
         if exePos != -1:
             print("[other]分離コマンド --> " + ALL_COMMAND[i-1] + "/ exePos = " + str(exePos))
             break
+        elif i == 1:
+            TCmode= False
+            convertMesseage.append('NoFoundMinecraftCommandFromExecute / line:' + str(line) + ' ' + str(cmdLineWrite))
+            cmdLineWrite = '#NoFoundMinecraftCommandFromExecute'
+            return cmdLineWrite,TCmode
     cmdExeList.clear()
     cmdExeList.append(cmdLineWrite[exePos:])
     cmdLineWrite = cmdLineWrite[:exePos-1]
@@ -404,8 +460,25 @@ def command_text_convert(cmdLine):
     elif cmdLine.startswith("experience") or cmdLine.startswith("xp"):
         print("xpコマンドもしくはexperienceコマンドです。")
         convType = 2
+    elif cmdLine.startswith("tp") or cmdLine.startswith("teleport"):
+        print("tpコマンドもしくはteleportコマンドです。")
+        convType = 3
+    elif cmdLine.startswith("scoreboard"):
+        print("scoreboardコマンドです。")
+        convType = 4
+    elif cmdLine.startswith("spreadplayers"):
+        print("spreadplayersコマンドです。")
+        convType = 5
     else:
         print("コマンド構文自体の変換は必要ありません。")
+        for i in range(ALL_COMMAND_CNT,0,-1):
+            separatePos = cmdLine.rfind(ALL_COMMAND[i-1])
+            if separatePos != -1:
+                print("コマンドタイプ --> " + ALL_COMMAND[i-1] + "/ separatePos = " + str(separatePos))
+                break
+            elif i == 1 and cmdLine != ' ':
+                convertMesseage.append('NoFoundMinecraftCommand / line:' + str(line) + ' ' + str(cmdLine))
+                cmdLine = '#NoFoundMinecraftCommand'
         convType = 0
     print("command_text_convert <-- " + cmdLine)
     if cmdLine.startswith("#"):
@@ -468,15 +541,15 @@ for i in range(0,cnt):
     if beforeText[i] == '':
         beforeText[i] = ' '
 
-for i in range(0,cnt):
-    lineText = re.sub('\n','',beforeText[i])
+for line in range(0,cnt):
+    lineText = re.sub('\n','',beforeText[line])
     print("変換処理を実行します <-- " + lineText)
     if lineText != '':
-        beforeText[i] = str(command_text_convert(lineText) + "\n")
+        beforeText[line] = str(command_text_convert(lineText) + "\n")
     else:
-        beforeText[i] = " \n"
+        beforeText[line] = " \n"
     #空白行があると処理が終了してしまう問題があるので修正する
-    print("result = " + beforeText[i])
+    print("result = " + beforeText[line])
 
 outText = open(dstPath, 'a', encoding='UTF-8')
 outText.writelines(beforeText)
@@ -485,4 +558,18 @@ outText.close
 print("変換が終了しました。UTF-8Nで再読込を行って保存してください。")
 print("path : " + srcDir + "  filename : " + dstPath +
       "\nfullPath : " + srcDir + "/" + dstPath)
+#convertMesseage.append('これはテストです')
+try:
+    convertMesseage[0]
+except:
+   convertMesseage.append('変換時の問題点はありませんでした。')
+else:
+    convertMesseage.insert(0,'\n変換時に問題が発生しました。')
+
+for i in range(0,len(convertMesseage)):
+    print(str(convertMesseage[i]) + "\n")
 exit()
+
+#引数
+#このファイルのパス 変換するmcfunctionファイルのパス 出力ファイルパス datapackのネームスペース
+#※ネームスペース内で実行することで自動でパスを取得し、乱数生成functionを正常に生成します。
