@@ -298,6 +298,9 @@ def Normal_convert(cmdLine,selectorList,convType):
                 functionText = open(srcDir + '/' + randomString + '/' + randomString + '.mcfunction', 'a', encoding='UTF-8')
                 functionText.writelines(functionMake)
                 functionText.close
+                #関数ファイル生成の仕組みについてはこちらに準拠
+                #https://nekoyama030330.seesaa.net/article/476684195.html
+                #https://nekoyama030330.seesaa.net/article/475665051.html
             cmdLine = 'function ' + cmdFunctionString + '/' + randomString
         ncResult = cmdLine
     else:
