@@ -301,7 +301,7 @@ def Normal_convert(cmdLine,selectorList,convType):
                 #関数ファイル生成の仕組みについてはこちらに準拠
                 #https://nekoyama030330.seesaa.net/article/476684195.html
                 #https://nekoyama030330.seesaa.net/article/475665051.html
-            cmdLine = 'function ' + cmdFunctionString + '/' + randomString
+            cmdLine = 'function ' + cmdFunctionString + ':' + randomString + '/' + randomString
         ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
