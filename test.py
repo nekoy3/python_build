@@ -276,7 +276,7 @@ def Normal_convert(cmdLine,selectorList,convType):
             print("[nc]scoreboardコマンドで乱数を生成することが出来ません。このファイルと同じ階層にフォルダを作成し乱数を生成する関数を新たに作成します。")
             randomString = 'rnumber_'
             randomString += ''.join([random.choice(string.digits + string.ascii_lowercase) for i in range(8)])
-            os.mkdir(srcDir + '/' + randomString)
+            os.mkdir(srcDir + '/NeConvFunction_/')
 
             if srcDir.count(nameSpace) >= 1:
                 print("[nc]ネームスペースを確認")
@@ -295,13 +295,13 @@ def Normal_convert(cmdLine,selectorList,convType):
                 functionMake.append('scoreboard players operation __' + randomString + '__ random = @e[tag=randomA.' + randomString + ',dy=6,sort=random,limit=1] random\n')
                 functionMake.append('kill @e[tag=randomA.' + randomString + ']\n')
                 functionMake.append('scoreboard players operation ' + str(selectorList[0]) + ' ' + getScoreboardName + ' = __' + randomString + '__ random')
-                functionText = open(srcDir + '/' + randomString + '/' + randomString + '.mcfunction', 'a', encoding='UTF-8')
+                functionText = open(srcDir + '/NeConvFunction_/' + randomString + '.mcfunction', 'a', encoding='UTF-8')
                 functionText.writelines(functionMake)
                 functionText.close
                 #関数ファイル生成の仕組みについてはこちらに準拠
                 #https://nekoyama030330.seesaa.net/article/476684195.html
                 #https://nekoyama030330.seesaa.net/article/475665051.html
-            cmdLine = 'function ' + cmdFunctionString + ':' + randomString + '/' + randomString
+            cmdLine = 'function ' + cmdFunctionString + ':NeConvFunction_/' + randomString
         ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
