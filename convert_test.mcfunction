@@ -39,3 +39,10 @@ xp 32768l @a[lm=30000,l=32767]
 xp -503l @r
 execute @e[r=50] ~ ~ ~ experience 8096l @a[r=50,scores={test987j9uq34=3..4}]
 execute @e[r=50] ~ ~ ~ tp @s @p[lm=50]
+execute @a[lm=50,l=300] ~ ~ ~ scoraboard players operation @s test987j9uq34 += @a[lm=40] test987j9uq34
+execute @a[lm=50,l=300] ~ ~ ~ scoreboard players operation @s test987j9uq34 += @a[lm=40] test987j9uq34
+execute @a ~ ~ ~ execute @e[type=zombie] ~ ~ ~ execute @p[r=50,rm=5] ~ ~ ~ execute @r[r=100] ~ ~ ~ execute @e[type=armor_stand,scores={bp_time2=..0,test987j9uq34=3..4}] ~ ~ ~ tp @p ^ ^ ^0.1 facing @p
+execute @e[type=zombie] ~ ~ ~ function sushi/sushi
+execute @a[lm=30] ~ ~ ~ scoreboard players add @s test987j9uq34 -14
+execute @a[lm=30] ~ ~ ~ scoreboard players remove @s test987j9uq34 -14
+execute @e[tag=select,scores={sn=1015,bp_time=45..140},type=armor_stand] ~ ~ ~ scoreboard players add @s bp_time -5
