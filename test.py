@@ -1,4 +1,3 @@
-from io import DEFAULT_BUFFER_SIZE
 import sys
 import os
 import datetime
