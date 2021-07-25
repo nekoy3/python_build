@@ -30,7 +30,6 @@ execute @a[m=!a,scores={test987j9uq34=!7..23}] ~ ~ ~ say 基本羅列変換9
 
 #追加分
 tp @a[m=!a,scores={test987j9uq34=!7..23}] 0 8 0
-execute @a[m=!a,c=5,l=7000,lm=3,ry=180,rym=-180] ~ ~ ~ execute @p[lm=0,l=99] ~ ~ ~ tell @a[r=10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。
 scoreboard objectives remove test987j9uq34
 tag @a remove test73482b3r2
 execute @e[tag=select,scores={bp_time2=..0},type=armor_stand] ~ ~ ~ clear @a[x=-30,y=6,z=-125,dx=50,dy=10,dz=50,m=a]
@@ -46,3 +45,7 @@ execute @e[type=zombie] ~ ~ ~ function sushi/sushi
 execute @a[lm=30] ~ ~ ~ scoreboard players add @s test987j9uq34 -14
 execute @a[lm=30] ~ ~ ~ scoreboard players remove @s test987j9uq34 -14
 execute @e[tag=select,scores={sn=1015,bp_time=45..140},type=armor_stand] ~ ~ ~ scoreboard players add @s bp_time -5
+execute @a[m=!c] ~ ~ ~ detect ~ ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~-1 ~ grass 0 execute @s ~ ~ ~ detect ~-1 ~-1 ~ grass 0 execute @s ~ ~ ~ detect ~1 ~-1 ~ grass 0 execute @s ~ ~ ~ detect ~ ~-1 ~-1 grass 0 execute @s ~ ~ ~ detect ~ ~-1 ~1 grass 0 execute @s ~ ~ ~ detect ~1 ~-1 ~1 grass 0 execute @s ~ ~ ~ detect ~-1 ~-1 ~1 grass 0 execute @s ~ ~ ~ detect ~1 ~-1 ~-1 grass 0 execute @s ~ ~ ~ detect ~-1 ~-1 ~-1 grass 0 execute @s ~ ~ ~ detect ~1 ~ ~ air 0 execute @s ~ ~ ~ detect ~-1 ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~ ~1 air 0 execute @s ~ ~ ~ detect ~ ~ ~-1 air 0 execute @s ~ ~ ~ detect ~1 ~ ~1 air 0 execute @s ~ ~ ~ detect ~1 ~ ~-1 air 0 execute @s ~ ~ ~ detect ~-1 ~ ~1 air 0 execute @s ~ ~ ~ detect ~-1 ~ ~-1 air 0 execute @s ~ ~ ~ detect ~ ~-4 ~ bedrock 0 execute @s ~ ~ ~ detect ~1 ~-4 ~ bedrock 0 execute @s ~ ~ ~ detect ~-1 ~-4 ~ bedrock 0 execute @s ~ ~ ~1 detect ~ ~-4 ~ bedrock 0 execute @s ~ ~ ~ detect ~ ~-4 ~-1 bedrock 0 execute @s ~ ~ ~ detect ~1 ~-4 ~1 bedrock 0 execute @s ~ ~ ~ detect ~1 ~-4 ~-1 bedrock 0 execute @s ~ ~ ~ detect ~-1 ~-4 ~1 bedrock 0 execute @s ~ ~ ~ detect ~-1 ~-4 ~-1 bedrock 0 tag @s add flat_error
+execute @a[m=!a,c=5,l=7000,lm=3,ry=180,rym=-180] ~ ~ ~ execute @p[lm=0,l=99] ~ ~ ~ tell @a[r=10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。
+#executeコマンド分割数2,detectは1,2個目に存在する if block ID Pos
+execute @a[m=!c] ~ ~ ~ detect ~ ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~-1 ~ grass 0 execute @r ~ ~ ~ execute @s[lm=5,l=30] ~ ~ ~ detect 0 4 0 redstone_block 0 summon lightning_bolt

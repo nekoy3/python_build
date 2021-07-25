@@ -1,4 +1,4 @@
-#NEKOYAMA Converter 2021/07/02 12:18:11 converted
+#NEKOYAMA Converter 2021/07/25 23:39:36 converted
 #統合版用にfunctionを作成し動作を確認する。
 #コンバートスクリプトにかけても問題なく動作するかをチェックする。
 #コンバート前をconvert_test.mcfunctionとし、コンバート後をconvert_after.mcfunctionとする。
@@ -6,7 +6,7 @@
  
 tp @s 0 4 0 0 0
 fill ~3 ~3 ~3 ~-3 ~ ~-3 air
-scoreboard objectives add test987j9uq34 dummy
+
 scoreboard players set @a test987j9uq34 3
 tag @a add test73482b3r2
 xp add @a 5 levels 
@@ -31,8 +31,7 @@ execute as @a[gamemode=!adventure,scores={test987j9uq34=!7..23}] at @s run say �
  
 #追加分
 tp @a[gamemode=!adventure,scores={test987j9uq34=!7..23}] 0 8 0
-execute as @a[y_rotation=-180..180,level=3..7000,gamemode=!adventure,limit=5] at @s as @p[level=0..99] at @s run tell @a[distance=..10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。 
-scoreboard objectives remove test987j9uq34
+
 tag @a remove test73482b3r2
 execute as @e[tag=select,scores={bp_time2=..0},type=armor_stand] at @s run clear @a[x=-30,y=6,z=-125,dx=50,dy=10,dz=50,gamemode=adventure] 
 xp add @e[type=player] -20 points 
@@ -43,4 +42,11 @@ execute as @e[distance=..50] at @s run tp @s @p[level=50..]
 #NoFoundMinecraftCommandFromExecute
 execute as @a[level=50..300] at @s run scoreboard players operation @s test987j9uq34 += @a[level=40..] test987j9uq34 
 execute as @a at @s as @e[type=zombie] at @s as @p[distance=5..50] at @s as @r[distance=..100] at @s as @e[type=armor_stand,scores={bp_time2=..0,test987j9uq34=3..4}] at @s run tp @p ^ ^ ^0.1 facing entity @p 
-function namespace/test
+execute as @e[type=zombie] at @s run function namearea:sushi/sushi
+execute as @a[level=30..] at @s run scoreboard players add @s test987j9uq34 -14 
+execute as @a[level=30..] at @s run scoreboard players remove @s test987j9uq34 -14 
+execute as @e[tag=select,scores={sn=1015,bp_time=45..140},type=armor_stand] at @s run time -5 
+execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block ~ ~-1 ~ grass as @s at @s if block ~-1 ~-1 ~ grass as @s at @s if block ~1 ~-1 ~ grass as @s at @s if block ~ ~-1 ~-1 grass as @s at @s if block ~ ~-1 ~1 grass as @s at @s if block ~1 ~-1 ~1 grass as @s at @s if block ~-1 ~-1 ~1 grass as @s at @s if block ~1 ~-1 ~-1 grass as @s at @s if block ~-1 ~-1 ~-1 grass as @s at @s if block ~1 ~ ~ air as @s at @s if block ~-1 ~ ~ air as @s at @s if block ~ ~ ~1 air as @s at @s if block ~ ~ ~-1 air as @s at @s if block ~1 ~ ~1 air as @s at @s if block ~1 ~ ~-1 air as @s at @s if block ~-1 ~ ~1 air as @s at @s if block ~-1 ~ ~-1 air as @s at @s if block ~ ~-4 ~ bedrock as @s at @s if block ~1 ~-4 ~ bedrock as @s at @s if block ~-1 ~-4 ~ bedrock as @s at @s if block ~ ~-4 ~ bedrock as @s at @s if block ~ ~-4 ~-1 bedrock as @s at @s if block ~1 ~-4 ~1 bedrock as @s at @s if block ~1 ~-4 ~-1 bedrock as @s at @s if block ~-1 ~-4 ~1 bedrock as @s at @s if block ~-1 ~-4 ~-1 bedrock run tag @s add flat_error 
+execute as @a[y_rotation=-180..180,level=3..7000,gamemode=!adventure,limit=5] at @s as @p[level=0..99] at @s run tell @a[distance=..10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。 
+#executeコマンド分割数2,detectは1,2個目に存在する if block ID Pos
+execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block ~ ~-1 ~ grass as @r at @s as @s[level=5..30] at @s if block 0 4 0 redstone_block run summon lightning_bolt 

@@ -1,3 +1,4 @@
+from io import DEFAULT_BUFFER_SIZE
 import sys
 import os
 import datetime
@@ -330,7 +331,7 @@ def Normal_convert(cmdLine,selectorList,convType):
     print("ncResult --> " + ncResult)
     return ncResult
 #####################################
-def type_convert(cmdEnume,convType):
+def type_convert(cmdEnume,convType,detList):
     TCmode = False
     if convType <= 0:
         result = cmdEnume
@@ -404,6 +405,12 @@ def type_convert(cmdEnume,convType):
         result = "execute "
         for i in range(0,len(separateExecute)):
             result += "as " + getSelList[i] + " at @s "
+            for j in range(1,len(detList),2): #detectのやつを追加する奴
+                if i == detList[j]-1:
+                    print('[detect/type]' + str(detList[j]) + '/' + str(detList[j-1]))
+                    tmp = 'if block ' + detList[j-1].replace('detect ','')
+                    tmp = tmp[:tmp.rfind(' ')]
+                    result += tmp + ' '
         #executeResultCmd = executeResultCmd.replace('SELECTOR_',getSelList[len(getSelList)-1])
         #convType == 1なら、SELECTOR_の数を検知して後ろからn番目を代入することにする
         print("[type_convert]executeResultCmdを変換します。")
@@ -436,10 +443,10 @@ def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
     cmdExeList.append(cmdLineWrite[exePos:])
     cmdLineWrite = cmdLineWrite[:exePos-1]
     #分離させた通常コマンドをListに入れてその分を削除
-    
     print("[other]通常コマンド分離後 --> " + str(cmdExeList))
+    
     exeCnt = cmdLineWrite.count('execute')
-    while exeCnt >= 2:
+    while exeCnt >= 2: #executeが二回以上使用されている場合、executeコマンドで区切る
         exePos = cmdLineWrite.rfind('execute')
         print("[other]execute重複抜き取り,exeCnt --> " + cmdLineWrite[exePos:] + " " + str(exeCnt))
         cmdExeList.append(cmdLineWrite[exePos:])
@@ -448,15 +455,26 @@ def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
     cmdExeList.append(cmdLineWrite)
     print("[other]分離コマンドリスト --> " + str(cmdLineWrite))
 
+    #detectの場合はここで判別し処理
+    detectList = []
+    for i in range(len(cmdExeList)):
+        if cmdExeList[i].count('detect'):
+            detectPos = cmdExeList[i].find('detect')
+            detectList.append(cmdExeList[i][detectPos:])
+            print('[detect]detectを検知しました。 --> ' + cmdExeList[i][detectPos:])
+            detectList.append(len(cmdExeList)-i) #i個目のas () at @s の次にif blockをぶち込むかを配列偶数個目に代入しておく
+            print('detectList --> ' + str(detectList))
+            cmdExeList[i] = cmdExeList[i][:detectPos-1]
+
     cmdLineWrite = ""
     for i in range(len(cmdExeList),0,-1):
-        cmdLineWrite += argument_convert(cmdExeList[i-1])
+        cmdLineWrite += argument_convert(cmdExeList[i-1]) #分割した分を引数変換しtype_convertに流す
         if i >= 1:
             cmdLineWrite += " "
 
     print("[other]通常コマンドを分離させて、変換しました。 --> " + str(cmdLineWrite))
     
-    cmdLineWrite,TCmode = type_convert(cmdLineWrite,convType)
+    cmdLineWrite,TCmode = type_convert(cmdLineWrite,convType,detectList) #ed
     TCmode= False
 
     return cmdLineWrite,TCmode
@@ -539,12 +557,12 @@ def command_text_convert(cmdLine):
             cmdLine = argument_convert(cmdLine)
         else:
             print("このコマンドはセレクタがありますが変換は不要です。")
-
+    emptyList = []
     if typeConvert:
-        convResult,typeConvert = type_convert(cmdLine,convType)
+        convResult,typeConvert = type_convert(cmdLine,convType,emptyList)
     else:
         convResult = cmdLine
-    
+
     return convResult
 ######################################
 
