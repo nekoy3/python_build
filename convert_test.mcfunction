@@ -49,3 +49,6 @@ execute @a[m=!c] ~ ~ ~ detect ~ ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~-1 ~ grass 
 execute @a[m=!a,c=5,l=7000,lm=3,ry=180,rym=-180] ~ ~ ~ execute @p[lm=0,l=99] ~ ~ ~ tell @a[r=10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。
 #executeコマンド分割数2,detectは1,2個目に存在する if block ID Pos
 execute @a[m=!c] ~ ~ ~ detect ~ ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~-1 ~ grass 0 execute @r ~ ~ ~ execute @s[lm=5,l=30] ~ ~ ~ detect 0 4 0 redstone_block 0 summon lightning_bolt
+tellraw @a {"rawtext":[{"text":"開始までのカウントダウンを開始します"}]} 
+tellraw @a {"rawtext":[{"text":"開始までのカウントダウンを開始します"},{"color":"yellow"}]} 
+tellraw @a {"rawtext":[{"text":"§atest"},{"text":"§a§ltesttesttest"},{"text":"§r§a§ktest"}]}

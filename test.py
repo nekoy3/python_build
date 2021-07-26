@@ -2,7 +2,6 @@ import sys
 import os
 import datetime
 import re
-from typing import AsyncGenerator
 import random
 import string
 
@@ -32,10 +31,10 @@ try:
     dstPath = args[2]
 except:
     dstPath = 'converted.mcfunction'
-finally:
-    dstPath = dstPath + suffix
-    if dstPath.count('.mcfunction') == 2:
-        dstPath = dstPath.replace('.mcfunction{2}', '.mcfunction')
+
+dstPath += suffix
+if dstPath.count('.mcfunction') == 2:
+    dstPath = dstPath.replace('.mcfunction{2}', '.mcfunction')
 
 try:
     nameSpace = args[3]
@@ -80,7 +79,7 @@ ALL_COMMAND = list()
 ALL_COMMAND = ['clear ','clone ','difficulty ','effect ','enchant ','event ','xp ','experience ','fill ','fog ','function ','gamemode ','gamerule ','gametest ','getchunkdata ','getlocalplayername ','getspawnpoint ','give ','globalpause ','immutableworld ','kick ','kill ','list ','listd ','locate ','locatebiome ','me ','mobevent ','msg ','w ','music ','particle ','permission ','playanimation ','playsound ','querytarget ','reload ','replaceitem ','ride ','save ','say ','schedule ','scoreboard ','setblock ','setmaxplayers ','setworldspawn ','spawnpoint ','spreadplayers ','stop ','stopsound ','structure ','summon ','tag ','tp ','teleport ','tellraw ','tell ','testfor ','testforblock ','testforblocks ','tickingarea ','time ','title ','titleraw ','toggledownfall ','wb ','weather ','whitelist ','worldbuilder ','wsserver']
 ALL_COMMAND_CNT = len(ALL_COMMAND)
 
-######################################
+##################################################################################################################
 def argument_convert(lineArg):
     argChecker = re.search(r'\@.\[',lineArg)
     if argChecker == None:
@@ -247,7 +246,7 @@ def argument_convert(lineArg):
     lineArg = lineArg.replace('SELECTOR_',outLineArg)
     print("引数変換後出力 = " + lineArg)
     return lineArg
-#####################################
+#################################################################################################################
 def Normal_convert(cmdLine,selectorList,convType):
     print("[nc]通常コマンドの変換を実行 --> " + cmdLine)
     selTempList = list()
@@ -317,6 +316,40 @@ def Normal_convert(cmdLine,selectorList,convType):
     elif cmdLine.startswith("function"):
         print("[nc]functionコマンドにネームエリア記述を追加します。")
         ncResult = cmdLine.replace('function ','function ' + nameSpace + ':')
+    elif cmdLine.startswith("tellraw"):
+        print("[nc]tellrawコマンドを変換します。 --> " + cmdLine)
+        jsonString = cmdLine[cmdLine.find('{'):]
+        cmdLine = cmdLine.replace(jsonString,'')
+        jsonString = jsonString.replace('{"rawtext":[','').replace(']}','')
+        if jsonString.count('"text"') >= 2:
+            jsonString = '["",' + jsonString + ']'
+            jsonString = jsonString.replace(',"text"','TMP_0',1).replace(',"text"','},{"text"').replace('TMP_0',',"text"',)
+        else:
+            jsonString = jsonString.replace('},{',',')
+        rawColorList = []
+        colorPos = 0
+        colorList = [['0','"color":"black"'],['1','"color":"dark_blue"'],['2','color":"dark_green"'],['3','color":"dark_aqua"'],['4','color":"dark_red"'],['5','color":"dark_purple"'],['6','color":"gold"'],['7','"color":"gray"'],['8','"color":"dark_gray"'],['9','"color":"blue"'],['a','"color":"green"'],['b','"color":"aqua"'],['c','"color":"red"'],['d','"color":"light_purple"'],['e','"color":"yellow"'],['f','"color":"white"'],['k','"obfuscated":true'],['l','"bold":true'],['m','"strikethrough":true'],['n','"underlined":true'],['o','"italic":true'],['r','']]
+        for i in range(jsonString.count('§')):
+            #text内に存在するセクションの数
+            colorPos = jsonString.rfind('§')
+            #colorTypeを格納し、色指定部分を削除
+            colorType = jsonString[colorPos+1]
+            rawColorList.append(colorType)
+            jsonString = jsonString[::-1].replace(colorType + '§','__ROLOC',1)[::-1]
+            print('colorType ' + colorType + ' colorPos ' + str(colorPos))
+        print(str(rawColorList))
+
+        for i in range(len(rawColorList)):
+            for j in range(len(colorList)):
+                if rawColorList[i] == colorList[j][0]:
+                    print('jsonString --> ' + jsonString)
+                    textInColorPos = jsonString.find('COLOR_')
+                    jsonTemp = jsonString[textInColorPos:jsonString.find('}',textInColorPos)+1].replace('}',',' + colorList[j][1] + '}',1)
+                    print(jsonString.find('}',textInColorPos))
+                    jsonString = jsonString.replace(jsonString[textInColorPos:jsonString.find('}',textInColorPos)+1],jsonTemp).replace('COLOR__','',1).replace(',}','}')
+
+        cmdLine += jsonString
+        ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
         ncResult = cmdLine
@@ -329,7 +362,7 @@ def Normal_convert(cmdLine,selectorList,convType):
     #######ここで何故かセレクターを置換してくれないので明日やる
     print("ncResult --> " + ncResult)
     return ncResult
-#####################################
+#################################################################################################################
 def type_convert(cmdEnume,convType,detList):
     TCmode = False
     if convType <= 0:
@@ -424,7 +457,7 @@ def type_convert(cmdEnume,convType,detList):
         print("[type_convert]変換は必要ありません。")
     print("type_convert / result = " + result)
     return result,TCmode
-######################################
+##################################################################################################################
 def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
     print("[other]通常コマンドを分離させます。")
     #ALL_COMMANDと繰り返し比較し、分割したらcmdExeListへ
@@ -477,7 +510,7 @@ def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
     TCmode= False
 
     return cmdLineWrite,TCmode
-######################################
+##################################################################################################################
 def command_text_convert(cmdLine):
     multiCmd = False
     typeConvert = True
@@ -506,6 +539,12 @@ def command_text_convert(cmdLine):
     elif cmdLine.startswith("function"):
         print("functionコマンドです。")
         convType = 6
+    elif cmdLine.startswith("tellraw"):
+        print("tellrawコマンドです。")
+        convType = 7
+    elif cmdLine.startswith("titleraw"):
+        print("titlerawコマンドです。")
+        convType = 7
     else:
         print("コマンド構文自体の変換は必要ありません。")
         for i in range(ALL_COMMAND_CNT,0,-1):
@@ -563,7 +602,7 @@ def command_text_convert(cmdLine):
         convResult = cmdLine
 
     return convResult
-######################################
+##################################################################################################################
 
 #!変換の流れ
 textRead = open(srcPath, "r", encoding="utf_8")

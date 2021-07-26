@@ -1,4 +1,4 @@
-#NEKOYAMA Converter 2021/07/25 23:39:36 converted
+#NEKOYAMA Converter 2021/07/27 00:40:09 converted
 #統合版用にfunctionを作成し動作を確認する。
 #コンバートスクリプトにかけても問題なく動作するかをチェックする。
 #コンバート前をconvert_test.mcfunctionとし、コンバート後をconvert_after.mcfunctionとする。
@@ -50,3 +50,6 @@ execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block 
 execute as @a[y_rotation=-180..180,level=3..7000,gamemode=!adventure,limit=5] at @s as @p[level=0..99] at @s run tell @a[distance=..10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。 
 #executeコマンド分割数2,detectは1,2個目に存在する if block ID Pos
 execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block ~ ~-1 ~ grass as @r at @s as @s[level=5..30] at @s if block 0 4 0 redstone_block run summon lightning_bolt 
+tellraw @a {"text":"開始までのカウントダウンを開始します"} 
+tellraw @a {"text":"開始までのカウントダウンを開始します","color":"yellow"} 
+tellraw @a ["",{"text":"test","obfuscated":true},{"text":"testtesttest","color":"green"},{"text":"test","obfuscated":true,"bold":true,"color":"green","color":"green"}]
