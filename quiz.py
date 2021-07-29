@@ -41,8 +41,10 @@ while True:
         print('不正解！　解説：' + line[3])
         qCnt += 1
 
-    print("\n続けるにはEnterを押してください・・・\n終了する場合はその他のキーを入力してください・・・")
+    print("\n続けるにはEnterを押してください・・・\n終了する場合はendを入力してください・・・")
     test = input()
-    if test != "":
+    if test == "end":
         print("問題回答の結果　回答数:" + str(qCnt) + " 正答数:" + str(qSuc) + " 正答率:" + str(round(float((qSuc/qCnt)*100),1)) + "%")
+        print("続けるには何かキーを入力してください・・・")
+        tmp = input()
         break
