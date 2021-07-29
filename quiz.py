@@ -16,6 +16,8 @@ if os.path.exists(srcPath):
     print("ファイルパスを認識")
 else:
     print("ファイルパスが無効です。")
+    print("続けるには何かキーを入力してください・・・")
+    tmp = input()
     exit()
 textRead = open(srcPath, "r", encoding="utf_8")
 beforeText = textRead.readlines()
