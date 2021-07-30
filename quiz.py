@@ -31,6 +31,8 @@ while True:
     line = beforeText[useLine].rstrip().split(' ')
     what = ''
     ansCnt = 0
+    for i in range(random.randint(0,20)):
+        line[(i%4)+1],line[(i%3)+1] = line[(i%3)+1],line[(i%4)+1]
     for i in range(4):
         try:
             line[i+1].index('*')
