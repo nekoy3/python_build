@@ -30,7 +30,8 @@ else:
 try:
     dstPath = args[2]
 except:
-    dstPath = 'converted.mcfunction'
+    print("出力のファイル名を入力(.mcfunction無しで)")
+    dstPath = input()
 
 dstPath += suffix
 if dstPath.count('.mcfunction') == 2:
