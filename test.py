@@ -296,8 +296,8 @@ def Normal_convert(cmdLine,selectorList,convType):
                 print(cmdLine)
                 temp = cmdLine[cmdLine.find('random'):]
                 randomRange = re.findall(r"\d+", temp)
+                getScoreboardName = cmdLine.replace('scoreboard players random SELECTOR_ ','').replace(' ','').replace(randomRange[0] + randomRange[1],'')
                 randomRange = [int(x) for x in randomRange]
-                getScoreboardName = cmdLine.replace('scoreboard players random SELECTOR_ ','').replace(' ','')
                 try:
                     srcDir.count(nameSpace + '/neconvfunction_')
                 except:
