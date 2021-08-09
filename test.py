@@ -18,7 +18,7 @@ try:
     srcPath = args[1].replace('\\','/')
 except:
     print("変換ファイルパスを入力")
-    srcPath = input()
+    srcPath = input().replace('\\','/')
 
 # ファイルパスが存在するかを検知
 if os.path.exists(srcPath):
@@ -41,10 +41,13 @@ try:
     nameSpace = args[3]
 except:
     print("datapackのネームスペースを検知します。")
+    srcPath = srcPath.replace('/','\\')
     try:
-        nameSpace = re.search(r'\/.+\/function',srcPath).group().replace('/','').replace('function','')
+        nameSpace = re.search(r'\\.+\\functions',srcPath)[0].replace('/','').replace('\\functions','')
     except:
         nameSpace = 'namearea'
+    else:
+        nameSpace = nameSpace[nameSpace.rfind('\\')+1:]
 nameSpacePos = nameSpace.rfind('/')
 print('nameSpace = ' + nameSpace[nameSpacePos+1:])
 
@@ -279,7 +282,7 @@ def Normal_convert(cmdLine,selectorList,convType):
             print("[nc]tp/teleportコマンドに変換は不要です。")
     elif cmdLine.startswith("scoreboard"):
         print("[nc]scoreboardコマンドを検証します。")
-        if cmdLine.count('random') == 1:
+        if cmdLine.count('random') >= 1:
             print("[nc]scoreboardコマンドで乱数を生成することが出来ません。このファイルと同じ階層にフォルダを作成し乱数を生成する関数を新たに作成します。")
             randomString = 'rnumber_'
             randomString += ''.join([random.choice(string.digits + string.ascii_lowercase) for i in range(8)])
@@ -290,29 +293,35 @@ def Normal_convert(cmdLine,selectorList,convType):
 
             if srcDir.count(nameSpace) >= 1:
                 print("[nc]ネームスペースを確認")
-                randomRangeMin = int(re.search(r'\s.?[0-9]+',cmdLine).group(0))
-                cmdLine = cmdLine.replace(str(randomRangeMin),'')
-                randomRangeMax = int(re.search(r'\s.?[0-9]+',cmdLine).group(0))
-                cmdLine = cmdLine.replace(str(randomRangeMax),'')
+                print(cmdLine)
+                temp = cmdLine[cmdLine.find('random'):]
+                randomRange = re.findall(r"\d+", temp)
+                randomRange = [int(x) for x in randomRange]
                 getScoreboardName = cmdLine.replace('scoreboard players random SELECTOR_ ','').replace(' ','')
-                cmdFunctionString = srcDir[srcDir.find(nameSpace):].replace('/function','')
+                try:
+                    srcDir.count(nameSpace + '/neconvfunction_')
+                except:
+                    cmdFunctionString = srcDir[srcDir.find(nameSpace)+len(nameSpace):].replace('\\','/').replace('/functions/','')
+                else:
+                    cmdFunctionString = ''
+                
                 functionMake = list()
                 functionMake.clear
                 functionMake.append('scoreboard objectives add random dummy\n')
-                [functionMake.append('summon minecraft:armor_stand ~ ~5 ~ {NoGravity:1b,Invulnerable:1b,Invisible:1b,Tags:["randomA.' + randomString + '"]}\n') for i in range(randomRangeMin,randomRangeMax+1)]
+                [functionMake.append('summon minecraft:armor_stand ~ ~5 ~ {NoGravity:1b,Invulnerable:1b,Invisible:1b,Tags:["randomA.' + randomString + '"]}\n') for i in range(randomRange[0],randomRange[1]+1)]
                 functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6] random 0\n')
-                [functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6,scores={random=0},limit=1,sort=random] random ' + str(i) + '\n') for i in range(randomRangeMin,randomRangeMax+1)]
+                [functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6,scores={random=0},limit=1,sort=random] random ' + str(i) + '\n') for i in range(randomRange[0],randomRange[1]+1)]
                 functionMake.append('scoreboard players operation __' + randomString + '__ random = @e[tag=randomA.' + randomString + ',dy=6,sort=random,limit=1] random\n')
                 functionMake.append('kill @e[tag=randomA.' + randomString + ']\n')
                 functionMake.append('scoreboard players operation ' + str(selectorList[0]) + ' ' + getScoreboardName + ' = __' + randomString + '__ random')
-                functionText = open(srcDir + '/neconvfunction_/' + randomString + '.mcfunction', 'a', encoding='UTF-8')
-                functionText.writelines(functionMake)
-                functionText.close
+                functionWritePath = srcDir + '/neconvfunction_/' + randomString + '.mcfunction'
+                functionTextWrite = open(functionWritePath, 'a', encoding='UTF-8')
+                functionTextWrite.writelines(functionMake)
+                functionTextWrite.close
                 #関数ファイル生成の仕組みについてはこちらに準拠
                 #https://nekoyama030330.seesaa.net/article/476684195.html
                 #https://nekoyama030330.seesaa.net/article/475665051.html
-            findFunction = nameSpace + '/function'
-            cmdLine = 'function ' + nameSpace + ':' + srcDir[srcDir.find(findFunction)+len(findFunction)+1:] + '/neconvfunction_/' + randomString
+            cmdLine = 'function ' + nameSpace + ':' + cmdFunctionString + 'neconvfunction_/' + randomString
         ncResult = cmdLine
     elif cmdLine.startswith("function"):
         print("[nc]functionコマンドにネームエリア記述を追加します。")
@@ -321,7 +330,7 @@ def Normal_convert(cmdLine,selectorList,convType):
         print("[nc]tellrawコマンドを変換します。 --> " + cmdLine)
         jsonString = cmdLine[cmdLine.find('{'):]
         cmdLine = cmdLine.replace(jsonString,'')
-        jsonString = jsonString.replace('{"rawtext":[','').replace(']}','')
+        jsonString = jsonString.replace('{"rawtext":[','').replace('{"rawtext": [','').replace(']}','')
         if jsonString.count('"text"') >= 2:
             jsonString = '["",' + jsonString + ']'
             jsonString = jsonString.replace(',"text"','TMP_0',1).replace(',"text"','},{"text"').replace('TMP_0',',"text"',)
