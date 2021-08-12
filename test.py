@@ -281,23 +281,22 @@ def Normal_convert(cmdLine,selectorList,convType):
             ncResult = cmdLine
             print("[nc]tp/teleportコマンドに変換は不要です。")
     elif cmdLine.startswith("scoreboard"):
+        cmdLine = re.sub(r'dummy\s.+','dummy',cmdLine)
         print("[nc]scoreboardコマンドを検証します。")
         try:
             tempPM = re.search(r'add\s.+\s.+-',cmdLine).group()
         except:
             None
         else:
-            if tempPM != None:
-                print('負数加減算を訂正します。')
-                cmdLine = cmdLine.replace('add','remove').replace('-','')
+            print('負数加減算を訂正します。')
+            cmdLine = cmdLine.replace('add','remove').replace('-','')
         try:
             tempPM = re.search(r'remove\s.+\s.+-',cmdLine).group()
         except:
             None
         else:
-            if tempPM != None:
-                print('負数加減算を訂正します。')
-                cmdLine = cmdLine.replace('remove','add').replace('-','')
+            print('負数加減算を訂正します。')
+            cmdLine = cmdLine.replace('remove','add').replace('-','')
         if cmdLine.count('random') >= 1:
             print("[nc]scoreboardコマンドで乱数を生成することが出来ません。このファイルと同じ階層にフォルダを作成し乱数を生成する関数を新たに作成します。")
             randomString = 'rnumber_'
@@ -430,7 +429,9 @@ def type_convert(cmdEnume,convType,detList):
             tempSeparate[i] = tempSeparate[i].replace(getSelList[i],'SELECTOR_')
         cmdEnume += tempSeparate[i]
     print("type_convert / getSelList = " + str(getSelList) + " tcSelectorCnt = " + str(tcSelectorCnt) + "\ncmdEnume = " + str(cmdEnume))
-
+    #セレクターが存在しないコマンドの対処
+    if cmdEnume == '':
+        cmdEnume = tempSeparate[0]
 
     #convType=1はexecuteコマンドに対応
     if convType == 1:
