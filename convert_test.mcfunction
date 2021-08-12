@@ -51,7 +51,6 @@ tellraw @a {"rawtext":[{"text":"開始までのカウントダウンを開始し
 tellraw @a {"rawtext":[{"text":"開始までのカウントダウンを開始します"},{"color":"yellow"}]} 
 tellraw @a {"rawtext":[{"text":"§atest"},{"text":"§a§ltesttesttest"},{"text":"§r§a§ktest"}]}
 execute @e[tag=select,scores={actNum=1}] ~ ~ ~ execute @s[tag=!randomSelected] ~ ~ ~ scoreboard players random @e[tag=select] random 1 11
-execute @e[tag=select,scores={actNum=1}] ~ ~ ~ execute @s[tag=!randomSelected] ~ ~ ~ scoreboard players random @e[tag=select] random -5 15
 execute @a[lm=30] ~ ~ ~ scoreboard players add @s test987j9uq34 -14
 execute @a[lm=30] ~ ~ ~ scoreboard players remove @s test987j9uq34 -14
 scoreboard players remove @s test987j9uq34 -14
@@ -61,3 +60,4 @@ scoreboard players add test example1231 1
 scoreboard objectives remove test987j9uq34
 tag @a remove test73482b3r2
 scoreboard objectives add test987j9uq34 dummy
+scoreboard players random @e[tag=select] random 0 10

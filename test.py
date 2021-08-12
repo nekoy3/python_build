@@ -341,8 +341,9 @@ def Normal_convert(cmdLine,selectorList,convType):
     elif cmdLine.startswith("function"):
         print("[nc]functionコマンドにネームエリア記述を追加します。")
         ncResult = cmdLine.replace('function ','function ' + nameSpace + ':')
-    elif cmdLine.startswith("tellraw"):
-        print("[nc]tellrawコマンドを変換します。 --> " + cmdLine)
+    elif cmdLine.startswith("tellraw") or cmdLine.startswith("titleraw"):
+        print("[nc]tellraw/titlerawコマンドを変換します。 --> " + cmdLine)
+        cmdLine = cmdLine.replace('titleraw','title')
         jsonString = cmdLine[cmdLine.find('{'):]
         cmdLine = cmdLine.replace(jsonString,'')
         jsonString = jsonString.replace('{"rawtext":[','').replace('{"rawtext": [','').replace(']}','')
@@ -375,6 +376,12 @@ def Normal_convert(cmdLine,selectorList,convType):
 
         cmdLine += jsonString
         ncResult = cmdLine
+    #elif cmdLine.startswith("summon"):
+    #    print("[nc]summonコマンドを変換します。 --> " + cmdLine)
+    #    entName = cmdLine[cmdLine.rfind(' '):]
+    #    cmdLine = re.sub(entName,'',cmdLine)
+    #    cmdLine = re.sub('summon','summon ' + entName,cmdLine)
+    #    ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
         ncResult = cmdLine
@@ -623,6 +630,8 @@ def command_text_convert(cmdLine):
         else:
             print("このコマンドはセレクタがありますが変換は不要です。")
     emptyList = []
+    cmdLine = cmdLine.replace('  ',' ')
+
     if typeConvert:
         convResult,typeConvert = type_convert(cmdLine,convType,emptyList)
     else:
