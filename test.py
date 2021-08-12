@@ -282,42 +282,58 @@ def Normal_convert(cmdLine,selectorList,convType):
             print("[nc]tp/teleportコマンドに変換は不要です。")
     elif cmdLine.startswith("scoreboard"):
         print("[nc]scoreboardコマンドを検証します。")
+        try:
+            tempPM = re.search(r'add\s.+\s.+-',cmdLine).group()
+        except:
+            None
+        else:
+            if tempPM != None:
+                print('負数加減算を訂正します。')
+                cmdLine = cmdLine.replace('add','remove').replace('-','')
+        try:
+            tempPM = re.search(r'remove\s.+\s.+-',cmdLine).group()
+        except:
+            None
+        else:
+            if tempPM != None:
+                print('負数加減算を訂正します。')
+                cmdLine = cmdLine.replace('remove','add').replace('-','')
         if cmdLine.count('random') >= 1:
             print("[nc]scoreboardコマンドで乱数を生成することが出来ません。このファイルと同じ階層にフォルダを作成し乱数を生成する関数を新たに作成します。")
             randomString = 'rnumber_'
             randomString += ''.join([random.choice(string.digits + string.ascii_lowercase) for i in range(8)])
             try:
                 os.mkdir(srcDir + '/neconvfunction_/')
-            except:
+            except FileExistsError:
                 print("既存のneconvfunctionフォルダを使用します。")
 
-            if srcDir.count(nameSpace) >= 1:
-                print("[nc]ネームスペースを確認")
-                print(cmdLine)
-                temp = cmdLine[cmdLine.find('random'):]
-                randomRange = re.findall(r"\d+", temp)
-                getScoreboardName = cmdLine.replace('scoreboard players random SELECTOR_ ','').replace(' ','').replace(randomRange[0] + randomRange[1],'')
-                randomRange = [int(x) for x in randomRange]
-                try:
-                    srcDir.count(nameSpace + '/neconvfunction_')
-                except:
-                    cmdFunctionString = srcDir[srcDir.find(nameSpace)+len(nameSpace):].replace('\\','/').replace('/functions/','')
-                else:
-                    cmdFunctionString = ''
+            print("[nc]ネームスペースを確認")
+            print(cmdLine)
+            temp = cmdLine[cmdLine.find('random'):]
+            randomRange = re.findall(r"-?\d+", temp)
+            getScoreboardName = cmdLine.replace('scoreboard players random SELECTOR_ ','').replace(' ','').replace(randomRange[0] + randomRange[1],'')
+            randomRange = [int(x) for x in randomRange]
+            try:
+                srcDir.count(nameSpace + '/neconvfunction_')
+            except:
+                cmdFunctionString = srcDir[srcDir.find(nameSpace)+len(nameSpace):].replace('\\','/').replace('/functions/','')
+            else:
+                cmdFunctionString = ''
                 
-                functionMake = list()
-                functionMake.clear
-                functionMake.append('scoreboard objectives add random dummy\n')
-                [functionMake.append('summon minecraft:armor_stand ~ ~5 ~ {NoGravity:1b,Invulnerable:1b,Invisible:1b,Tags:["randomA.' + randomString + '"]}\n') for i in range(randomRange[0],randomRange[1]+1)]
-                functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6] random 0\n')
-                [functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6,scores={random=0},limit=1,sort=random] random ' + str(i) + '\n') for i in range(randomRange[0],randomRange[1]+1)]
-                functionMake.append('scoreboard players operation __' + randomString + '__ random = @e[tag=randomA.' + randomString + ',dy=6,sort=random,limit=1] random\n')
-                functionMake.append('kill @e[tag=randomA.' + randomString + ']\n')
-                functionMake.append('scoreboard players operation ' + str(selectorList[0]) + ' ' + getScoreboardName + ' = __' + randomString + '__ random')
-                functionWritePath = srcDir + '/neconvfunction_/' + randomString + '.mcfunction'
-                functionTextWrite = open(functionWritePath, 'a', encoding='UTF-8')
-                functionTextWrite.writelines(functionMake)
-                functionTextWrite.close
+            functionMake = list()
+            functionMake.clear
+            functionMake.append('scoreboard objectives add random dummy\n')
+            [functionMake.append('summon minecraft:armor_stand ~ ~5 ~ {NoGravity:1b,Invulnerable:1b,Invisible:1b,Tags:["randomA.' + randomString + '"]}\n') for i in range(randomRange[0],randomRange[1]+1)]
+            functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6] random 0\n')
+            [functionMake.append('scoreboard players set @e[tag=randomA.' + randomString + ',dy=6,scores={random=0},limit=1,sort=random] random ' + str(i) + '\n') for i in range(randomRange[0],randomRange[1]+1)]
+            functionMake.append('scoreboard players operation __' + randomString + '__ random = @e[tag=randomA.' + randomString + ',dy=6,sort=random,limit=1] random\n')
+            functionMake.append('kill @e[tag=randomA.' + randomString + ']\n')
+            functionMake.append('scoreboard players operation ' + str(selectorList[0]) + ' ' + getScoreboardName + ' = __' + randomString + '__ random\n')
+            functionMake.append('scoreboard players reset ' + '__' + randomString + '__ random')
+            functionWritePath = srcDir + '/neconvfunction_/' + randomString + '.mcfunction'
+            functionTextWrite = open(functionWritePath, 'a', encoding='UTF-8')
+            functionTextWrite.writelines(functionMake)
+            functionTextWrite.close
                 #関数ファイル生成の仕組みについてはこちらに準拠
                 #https://nekoyama030330.seesaa.net/article/476684195.html
                 #https://nekoyama030330.seesaa.net/article/475665051.html
