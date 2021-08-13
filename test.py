@@ -79,9 +79,10 @@ inText = open(dstPath, 'a', encoding='UTF-8')
 inText.write("#NEKOYAMA Converter " + str(dateText) + " converted\n")
 inText.close
 
-ALL_COMMAND = list()
 ALL_COMMAND = ['clear ','clone ','difficulty ','effect ','enchant ','event ','xp ','experience ','fill ','fog ','function ','gamemode ','gamerule ','gametest ','getchunkdata ','getlocalplayername ','getspawnpoint ','give ','globalpause ','immutableworld ','kick ','kill ','list ','listd ','locate ','locatebiome ','me ','mobevent ','msg ','w ','music ','particle ','permission ','playanimation ','playsound ','querytarget ','reload ','replaceitem ','ride ','save ','say ','schedule ','scoreboard ','setblock ','setmaxplayers ','setworldspawn ','spawnpoint ','spreadplayers ','stop ','stopsound ','structure ','summon ','tag ','tp ','teleport ','tellraw ','tell ','testfor ','testforblock ','testforblocks ','tickingarea ','time ','title ','titleraw ','toggledownfall ','wb ','weather ','whitelist ','worldbuilder ','wsserver']
 ALL_COMMAND_CNT = len(ALL_COMMAND)
+colorList = [['0','"color":"black"'],['1','"color":"dark_blue"'],['2','color":"dark_green"'],['3','color":"dark_aqua"'],['4','color":"dark_red"'],['5','color":"dark_purple"'],['6','color":"gold"'],['7','"color":"gray"'],['8','"color":"dark_gray"'],['9','"color":"blue"'],['a','"color":"green"'],['b','"color":"aqua"'],['c','"color":"red"'],['d','"color":"light_purple"'],['e','"color":"yellow"'],['f','"color":"white"'],['k','"obfuscated":true'],['l','"bold":true'],['m','"strikethrough":true'],['n','"underlined":true'],['o','"italic":true'],['r','']]
+musicConvList = [['random.totem','item.totem.use'],['random.levelup','entity.player.levelup'],['random.orb','entity.experience_orb.pickup']]
 
 ##################################################################################################################
 def argument_convert(lineArg):
@@ -263,7 +264,7 @@ def separate_execute_cmd(cmdMain):
                 divisionNumList.append(separatePos)
                 print("[separate_execute]分離コマンド --> " + ALL_COMMAND[i-1] + "/ separatePos = " + str(separatePos))
             elif i == 1 and divisionNumList == []:
-                convertMesseage.append('NoFoundMinecraftCommandFromExecute / line:' + str(line) + ' ' + str(cmdMain))
+                convertMesseage.append('NoFoundMinecraftCommandFromExecute / ' + str(cmdMain))
                 result = '#error'
                 return result,result
         divisionNumList.sort()
@@ -377,7 +378,6 @@ def Normal_convert(cmdLine,selectorList,convType):
             jsonString = jsonString.replace('},{',',')
         rawColorList = []
         colorPos = 0
-        colorList = [['0','"color":"black"'],['1','"color":"dark_blue"'],['2','color":"dark_green"'],['3','color":"dark_aqua"'],['4','color":"dark_red"'],['5','color":"dark_purple"'],['6','color":"gold"'],['7','"color":"gray"'],['8','"color":"dark_gray"'],['9','"color":"blue"'],['a','"color":"green"'],['b','"color":"aqua"'],['c','"color":"red"'],['d','"color":"light_purple"'],['e','"color":"yellow"'],['f','"color":"white"'],['k','"obfuscated":true'],['l','"bold":true'],['m','"strikethrough":true'],['n','"underlined":true'],['o','"italic":true'],['r','']]
         for i in range(jsonString.count('§')):
             #text内に存在するセクションの数
             colorPos = jsonString.rfind('§')
@@ -402,6 +402,13 @@ def Normal_convert(cmdLine,selectorList,convType):
     elif cmdLine.startswith("spreadplayers"):
         print("[nc]spreadplayersコマンドを変換します。 --> " + cmdLine)
         cmdLine = re.sub('SELECTOR_','false SELECTOR_',cmdLine)
+        ncResult = cmdLine
+    elif cmdLine.startswith("playsound"):
+        print("[nc]playsoundコマンドを変換します。 --> " + cmdLine)
+        cmdLine = re.sub('SELECTOR_','master SELECTOR_',cmdLine)
+        for i in range(len(musicConvList)):
+            if re.search(musicConvList[i][0],cmdLine):
+                cmdLine = re.sub(musicConvList[i][0],musicConvList[i][1],cmdLine)
         ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
@@ -542,7 +549,6 @@ def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
 def command_text_convert(cmdLine):
     multiCmd = False
     typeConvert = True
-    #startswithは標準ライブラリのメソッド
     if cmdLine.startswith("#"):
         print("コメント行です。")
         convType = 0

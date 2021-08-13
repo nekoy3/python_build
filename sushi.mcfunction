@@ -1,4 +1,4 @@
-#NEKOYAMA Converter 2021/08/13 16:17:52 converted
+#NEKOYAMA Converter 2021/08/13 16:52:41 converted
 #統合版用にfunctionを作成し動作を確認する。
 #コンバートスクリプトにかけても問題なく動作するかをチェックする。
 #コンバート前をconvert_test.mcfunctionとし、コンバート後をconvert_after.mcfunctionとする。
@@ -51,7 +51,7 @@ execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block 
 tellraw @a {"text":"開始までのカウントダウンを開始します"} 
 tellraw @a {"text":"開始までのカウントダウンを開始します","color":"yellow"} 
 tellraw @a ["",{"text":"test","obfuscated":true},{"text":"testtesttest","color":"green"},{"text":"test","obfuscated":true,"bold":true,"color":"green","color":"green"}]
-execute as @e[tag=select,scores={actNum=1}] at @s as @s[tag=!randomSelected] at @s run function namearea:neconvfunction_/rnumber_45oqb7l5
+execute as @e[tag=select,scores={actNum=1}] at @s as @s[tag=!randomSelected] at @s run function namearea:neconvfunction_/rnumber_o6i0lxwj
 execute as @a[level=30..] at @s run scoreboard players remove @s test987j9uq34 14 
 execute as @a[level=30..] at @s run scoreboard players add @s test987j9uq34 14 
 scoreboard players add @s test987j9uq34 14
@@ -61,7 +61,7 @@ scoreboard players add test example1231 1
 scoreboard objectives remove test987j9uq34
 tag @a remove test73482b3r2
 scoreboard objectives add test987j9uq34 dummy
-function namearea:neconvfunction_/rnumber_1daxfzos
+function namearea:neconvfunction_/rnumber_7ffc7g8b
 summon armor_stand -48 248 -122
 execute as @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,gamemode=adventure] at @s if block ~ ~-1 ~ tnt run tp @s ~ ~-1 ~ 
 execute as @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,gamemode=adventure] at @s if block ~ ~-1 ~ redstone_block run tp @s ~ ~-1 ~ 
