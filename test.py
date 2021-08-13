@@ -376,12 +376,10 @@ def Normal_convert(cmdLine,selectorList,convType):
 
         cmdLine += jsonString
         ncResult = cmdLine
-    #elif cmdLine.startswith("summon"):
-    #    print("[nc]summonコマンドを変換します。 --> " + cmdLine)
-    #    entName = cmdLine[cmdLine.rfind(' '):]
-    #    cmdLine = re.sub(entName,'',cmdLine)
-    #    cmdLine = re.sub('summon','summon ' + entName,cmdLine)
-    #    ncResult = cmdLine
+    elif cmdLine.startswith("spreadplayers"):
+        print("[nc]spreadplayersコマンドを変換します。 --> " + cmdLine)
+        cmdLine = re.sub('SELECTOR_','false SELECTOR_',cmdLine)
+        ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
         ncResult = cmdLine
@@ -471,9 +469,9 @@ def type_convert(cmdEnume,convType,detList):
         result = "execute "
         for i in range(0,len(separateExecute)):
             result += "as " + getSelList[i] + " at @s "
-            for j in range(1,len(detList),2): #detectのやつを追加する奴
+            for j in range(1,len(detList),2): #detectのやつを追加する
                 if i == detList[j]-1:
-                    print('[detect/type]' + str(detList[j]) + '/' + str(detList[j-1]))
+                    print('[detect/type]' + str(detList[j])) #typeにはN個目のブロック指定を指す。偶数個目[j]に代入。detect部分は[j-1]
                     tmp = 'if block ' + detList[j-1].replace('detect ','')
                     tmp = tmp[:tmp.rfind(' ')]
                     result += tmp + ' '
@@ -482,8 +480,6 @@ def type_convert(cmdEnume,convType,detList):
         print("[type_convert]executeResultCmdを変換します。")
         executeResultCmd = Normal_convert(executeResultCmd,getSelList,convType)
         result += "run " + executeResultCmd
-    #convType=1はxpコマンドに対応
-    #だったが廃止しすべてNormal_convertに受け渡して判別し変換処理をおこなう
     elif convType >= 2:
         print("[type_convert]cmdEnumeを変換します。")
         result = Normal_convert(cmdEnume,getSelList,convType)
@@ -680,8 +676,9 @@ else:
 
 for i in range(0,len(convertMesseage)):
     print(str(convertMesseage[i]) + "\n")
+print("続けるには何かキーを入力してください・・・")
+input()
 exit()
-
 #引数
 #このファイルのパス 変換するmcfunctionファイルのパス 出力ファイルパス datapackのネームスペース
 #※ネームスペース内で実行することで自動でパスを取得し、乱数生成functionを正常に生成します。
