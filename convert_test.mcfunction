@@ -62,7 +62,7 @@ tag @a remove test73482b3r2
 scoreboard objectives add test987j9uq34 dummy
 scoreboard players random @e[tag=select] random 0 10
 summon armor_stand -48 248 -122
-execute @e[tag=select,scores={sn=1015},type=armor_stand] ~ ~ ~ scoreboard players add @s bp_time 0
 execute @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,m=a] ~ ~ ~ detect ~ ~-1 ~ tnt 0 tp @s ~ ~-1 ~
 execute @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,m=a] ~ ~ ~ detect ~ ~-1 ~ redstone_block 0 tp @s ~ ~-1 ~
 spreadplayers -4.5 -99.5 0 25 @e[tag=sbp,scores={sp=1}]
+execute @e[tag=select,scores={sn=1015},type=armor_stand] ~ ~ ~ scoreboard players add @s bp_time 0

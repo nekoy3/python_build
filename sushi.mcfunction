@@ -1,4 +1,4 @@
-#NEKOYAMA Converter 2021/08/13 15:12:31 converted
+#NEKOYAMA Converter 2021/08/13 16:17:52 converted
 #統合版用にfunctionを作成し動作を確認する。
 #コンバートスクリプトにかけても問題なく動作するかをチェックする。
 #コンバート前をconvert_test.mcfunctionとし、コンバート後をconvert_after.mcfunctionとする。
@@ -39,11 +39,11 @@ xp add @a[level=30000..32767] 32768 levels
 xp add @r -503 levels 
 execute as @e[distance=..50] at @s run xp add @a[distance=..50,scores={test987j9uq34=3..4}] 8096 levels 
 execute as @e[distance=..50] at @s run tp @s @p[level=50..] 
-#NoFoundMinecraftCommandFromExecute
+#error
 execute as @a[level=50..300] at @s run scoreboard players operation @s test987j9uq34 += @a[level=40..] test987j9uq34 
 execute as @a at @s as @e[type=zombie] at @s as @p[distance=5..50] at @s as @r[distance=..100] at @s as @e[type=armor_stand,scores={bp_time2=..0,test987j9uq34=3..4}] at @s run tp @p ^ ^ ^0.1 facing entity @p 
 execute as @e[type=zombie] at @s run function namearea:sushi/sushi
-execute as @e[tag=select,scores={sn=1015,bp_time=45..140},type=armor_stand] at @s run time -5 
+execute as @e[tag=select,scores={sn=1015,bp_time=45..140},type=armor_stand] at @s run scoreboard players remove @s bp_time 5 
 execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block ~ ~-1 ~ grass as @s at @s if block ~-1 ~-1 ~ grass as @s at @s if block ~1 ~-1 ~ grass as @s at @s if block ~ ~-1 ~-1 grass as @s at @s if block ~ ~-1 ~1 grass as @s at @s if block ~1 ~-1 ~1 grass as @s at @s if block ~-1 ~-1 ~1 grass as @s at @s if block ~1 ~-1 ~-1 grass as @s at @s if block ~-1 ~-1 ~-1 grass as @s at @s if block ~1 ~ ~ air as @s at @s if block ~-1 ~ ~ air as @s at @s if block ~ ~ ~1 air as @s at @s if block ~ ~ ~-1 air as @s at @s if block ~1 ~ ~1 air as @s at @s if block ~1 ~ ~-1 air as @s at @s if block ~-1 ~ ~1 air as @s at @s if block ~-1 ~ ~-1 air as @s at @s if block ~ ~-4 ~ bedrock as @s at @s if block ~1 ~-4 ~ bedrock as @s at @s if block ~-1 ~-4 ~ bedrock as @s at @s if block ~ ~-4 ~ bedrock as @s at @s if block ~ ~-4 ~-1 bedrock as @s at @s if block ~1 ~-4 ~1 bedrock as @s at @s if block ~1 ~-4 ~-1 bedrock as @s at @s if block ~-1 ~-4 ~1 bedrock as @s at @s if block ~-1 ~-4 ~-1 bedrock run tag @s add flat_error 
 execute as @a[y_rotation=-180..180,level=3..7000,gamemode=!adventure,limit=5] at @s as @p[level=0..99] at @s run tell @a[distance=..10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。 
 #executeコマンド分割数2,detectは1,2個目に存在する if block ID Pos
@@ -51,7 +51,7 @@ execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block 
 tellraw @a {"text":"開始までのカウントダウンを開始します"} 
 tellraw @a {"text":"開始までのカウントダウンを開始します","color":"yellow"} 
 tellraw @a ["",{"text":"test","obfuscated":true},{"text":"testtesttest","color":"green"},{"text":"test","obfuscated":true,"bold":true,"color":"green","color":"green"}]
-execute as @e[tag=select,scores={actNum=1}] at @s as @s[tag=!randomSelected] at @s run function namearea:neconvfunction_/rnumber_pgzyo6eu
+execute as @e[tag=select,scores={actNum=1}] at @s as @s[tag=!randomSelected] at @s run function namearea:neconvfunction_/rnumber_45oqb7l5
 execute as @a[level=30..] at @s run scoreboard players remove @s test987j9uq34 14 
 execute as @a[level=30..] at @s run scoreboard players add @s test987j9uq34 14 
 scoreboard players add @s test987j9uq34 14
@@ -61,9 +61,9 @@ scoreboard players add test example1231 1
 scoreboard objectives remove test987j9uq34
 tag @a remove test73482b3r2
 scoreboard objectives add test987j9uq34 dummy
-function namearea:neconvfunction_/rnumber_b77feavm
+function namearea:neconvfunction_/rnumber_1daxfzos
 summon armor_stand -48 248 -122
-execute as @e[tag=select,scores={sn=1015},type=armor_stand] at @s run time 0 
 execute as @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,gamemode=adventure] at @s if block ~ ~-1 ~ tnt run tp @s ~ ~-1 ~ 
 execute as @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,gamemode=adventure] at @s if block ~ ~-1 ~ redstone_block run tp @s ~ ~-1 ~ 
 spreadplayers -4.5 -99.5 0 25 false @e[tag=sbp,scores={sp=1}]
+execute as @e[tag=select,scores={sn=1015},type=armor_stand] at @s run scoreboard players add @s bp_time 0 

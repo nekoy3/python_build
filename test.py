@@ -251,6 +251,29 @@ def argument_convert(lineArg):
     print("引数変換後出力 = " + lineArg)
     return lineArg
 #################################################################################################################
+def separate_execute_cmd(cmdMain):
+        #最終的にコマンド本文の変数には通常コマンドが無い状態で引き渡す。executeResultCmdに抜き取ったコマンドを代入実行時の引数はコマンド本文の変数のみALL_COMMAND
+        #errorが返されたらbreakする
+        divisionNumList = []
+        print("[separate_execute]execute 通常コマンドを分離させます")
+        #ALL_COMMANDと繰り返し比較し、分割したらtcListへ
+        for i in range(ALL_COMMAND_CNT,0,-1):
+            separatePos = cmdMain.rfind(ALL_COMMAND[i-1])
+            if separatePos != -1:
+                divisionNumList.append(separatePos)
+                print("[separate_execute]分離コマンド --> " + ALL_COMMAND[i-1] + "/ separatePos = " + str(separatePos))
+            elif i == 1 and divisionNumList == []:
+                convertMesseage.append('NoFoundMinecraftCommandFromExecute / line:' + str(line) + ' ' + str(cmdMain))
+                result = '#error'
+                return result,result
+        divisionNumList.sort()
+        print(divisionNumList)
+        separatePos = divisionNumList[0] #一番多くの文字を抽出したコマンドのseparatePos
+        executeResultCmd = cmdMain[separatePos:]
+        cmdExe = cmdMain[:separatePos-1]
+        print("[separate_execute]" + cmdExe + ' // ' + executeResultCmd)
+        return cmdExe,executeResultCmd
+#################################################################################################################
 def Normal_convert(cmdLine,selectorList,convType):
     print("[nc]通常コマンドの変換を実行 --> " + cmdLine)
     selTempList = list()
@@ -440,21 +463,9 @@ def type_convert(cmdEnume,convType,detList):
 
     #convType=1はexecuteコマンドに対応
     if convType == 1:
-        print("[type_convert]execute 通常コマンドを分離させます")
-        #ALL_COMMANDと繰り返し比較し、分割したらtcListへ
-        for i in range(ALL_COMMAND_CNT,0,-1):
-            separatePos = cmdEnume.rfind(ALL_COMMAND[i-1])
-            if separatePos != -1:
-                print("[type_convert]分離コマンド --> " + ALL_COMMAND[i-1] + "/ separatePos = " + str(separatePos))
-                break
-            elif i == 1:
-                TCmode= False
-                convertMesseage.append('NoFoundMinecraftCommandFromExecute / line:' + str(line) + ' ' + str(cmdEnume))
-                result = '#NoFoundMinecraftCommandFromExecute'
-                return result,TCmode
-        executeResultCmd = cmdEnume[separatePos:]
-        cmdEnume = cmdEnume[:separatePos-1]
-        #分離させた通常コマンドをListに入れてその分を削除
+        cmdEnume,executeResultCmd = separate_execute_cmd(cmdEnume)
+        if cmdEnume == '#error':
+            return cmdEnume,TCmode
         print("[type_convert]通常コマンド分離後 --> " + str(executeResultCmd))
         enumeExeCnt = cmdEnume.count('execute')
         while enumeExeCnt >= 2:
@@ -489,22 +500,9 @@ def type_convert(cmdEnume,convType,detList):
     return result,TCmode
 ##################################################################################################################
 def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
-    print("[other]通常コマンドを分離させます。")
-    #ALL_COMMANDと繰り返し比較し、分割したらcmdExeListへ
-    for i in range(ALL_COMMAND_CNT,0,-1):
-        exePos = cmdLineWrite.rfind(ALL_COMMAND[i-1])
-        if exePos != -1:
-            print("[other]分離コマンド --> " + ALL_COMMAND[i-1] + "/ exePos = " + str(exePos))
-            break
-        elif i == 1:
-            TCmode= False
-            convertMesseage.append('NoFoundMinecraftCommandFromExecute / line:' + str(line) + ' ' + str(cmdLineWrite))
-            cmdLineWrite = '#NoFoundMinecraftCommandFromExecute'
-            return cmdLineWrite,TCmode
-    cmdExeList.clear()
-    cmdExeList.append(cmdLineWrite[exePos:])
-    cmdLineWrite = cmdLineWrite[:exePos-1]
+    cmdLineWrite,exeCmd = separate_execute_cmd(cmdLineWrite)
     #分離させた通常コマンドをListに入れてその分を削除
+    cmdExeList = [exeCmd]
     print("[other]通常コマンド分離後 --> " + str(cmdExeList))
     
     exeCnt = cmdLineWrite.count('execute')
