@@ -410,6 +410,13 @@ def Normal_convert(cmdLine,selectorList,convType):
             if re.search(musicConvList[i][0],cmdLine):
                 cmdLine = re.sub(musicConvList[i][0],musicConvList[i][1],cmdLine)
         ncResult = cmdLine
+    elif cmdLine.startswith("effect"):
+        print("[nc]effectコマンドを変換します。 --> " + cmdLine)
+        if re.search('0 0',cmdLine):
+            cmdLine = re.sub('effect ','effect clear ',re.sub('0 0','',cmdLine))
+        else:
+            cmdLine = re.sub('effect ','effect give ',cmdLine)
+        ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
         ncResult = cmdLine
@@ -579,6 +586,9 @@ def command_text_convert(cmdLine):
     elif cmdLine.startswith("titleraw"):
         print("titlerawコマンドです。")
         convType = 7
+    elif cmdLine.startswith("effect"):
+        print("effectコマンドです。")
+        convType = 8
     else:
         print("コマンド構文自体の変換は必要ありません。")
         for i in range(ALL_COMMAND_CNT,0,-1):

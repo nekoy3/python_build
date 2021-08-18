@@ -66,3 +66,9 @@ execute @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,m=a] ~ ~ ~ detect ~ ~-1 ~ tnt 0 
 execute @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,m=a] ~ ~ ~ detect ~ ~-1 ~ redstone_block 0 tp @s ~ ~-1 ~
 spreadplayers -4.5 -99.5 0 25 @e[tag=sbp,scores={sp=1}]
 execute @e[tag=select,scores={sn=1015},type=armor_stand] ~ ~ ~ scoreboard players add @s bp_time 0
+effect @a[lm=10] saturation 1 255 true
+execute @a[lm=30] ~ ~ ~ effect @e resistance 0 0
+effect @e resistance 0 0
+scoreboard players operation @s test987j9uq34 += @a[lm=40] test987j9uq34
+scoreboard players operation @a[lm=40] test987j9uq34 += @a[lm=40] test987j9uq34
+scoreboard players operation @s test987j9uq34 += @s test987j9uq34
