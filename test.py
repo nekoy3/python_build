@@ -275,6 +275,27 @@ def separate_execute_cmd(cmdMain):
         print("[separate_execute]" + cmdExe + ' // ' + executeResultCmd)
         return cmdExe,executeResultCmd
 #################################################################################################################
+def json_color_type_convert(jsonString):
+    #入力形式{"text":"§(カラーコード)テキスト本文"}
+    rawColorList = []
+    colorPos = 0
+    for i in range(jsonString.count('§')):
+            #text内に存在するセクションの数
+        colorPos = jsonString.rfind('§')
+            #colorTypeを格納し、色指定部分を削除
+        colorType = jsonString[colorPos+1]
+        rawColorList.append(colorType)
+        jsonString = jsonString[::-1].replace(colorType + '§','__ROLOC',1)[::-1]
+
+    for i in range(len(rawColorList)):
+        for j in range(len(colorList)):
+            if rawColorList[i] == colorList[j][0]:
+                textInColorPos = jsonString.find('COLOR_')
+                jsonTemp = jsonString[textInColorPos:jsonString.find('}',textInColorPos)+1].replace('}',',' + colorList[j][1] + '}',1)
+                print(jsonString.find('}',textInColorPos))
+                jsonString = jsonString.replace(jsonString[textInColorPos:jsonString.find('}',textInColorPos)+1],jsonTemp).replace('COLOR__','',1).replace(',}','}')
+    return jsonString
+#################################################################################################################
 def Normal_convert(cmdLine,selectorList,convType):
     print("[nc]通常コマンドの変換を実行 --> " + cmdLine)
     selTempList = list()
@@ -305,7 +326,14 @@ def Normal_convert(cmdLine,selectorList,convType):
             ncResult = cmdLine
             print("[nc]tp/teleportコマンドに変換は不要です。")
     elif cmdLine.startswith("scoreboard"):
-        cmdLine = re.sub(r'dummy\s.+','dummy',cmdLine)
+        if cmdLine.startswith("scoreboard objectives add"):
+            try:
+                displayName = re.sub(r'dummy\s','',re.search(r'dummy\s.+',cmdLine).group())
+            except:
+                displayName = ''
+            if displayName != '':
+                scoreboardName = cmdLine.rsplit(None,4)[2]
+            cmdLine = re.sub(r'dummy\s.+','dummy',cmdLine)
         print("[nc]scoreboardコマンドを検証します。")
         try:
             tempPM = re.search(r'add\s.+\s.+-',cmdLine).group()
@@ -315,7 +343,7 @@ def Normal_convert(cmdLine,selectorList,convType):
             print('負数加減算を訂正します。')
             cmdLine = cmdLine.replace('add','remove').replace('-','')
         try:
-            tempPM = re.search(r'remove\s.+\s.+-',cmdLine).group()
+            re.search(r'remove\s.+\s.+-',cmdLine).group()
         except:
             None
         else:
@@ -362,6 +390,11 @@ def Normal_convert(cmdLine,selectorList,convType):
                 #https://nekoyama030330.seesaa.net/article/475665051.html
             cmdLine = 'function ' + nameSpace + ':' + cmdFunctionString + 'neconvfunction_/' + randomString
         ncResult = cmdLine
+        if cmdLine.startswith("scoreboard objectives add"):
+            if displayName != '':
+                global globalAddCmd
+                displayName = json_color_type_convert('{"text":\"' + displayName.replace('\"','') + '\"}')
+                globalAddCmd = 'scoreboard objectives modify ' + scoreboardName + ' displayname ' + displayName
     elif cmdLine.startswith("function"):
         print("[nc]functionコマンドにネームエリア記述を追加します。")
         ncResult = cmdLine.replace('function ','function ' + nameSpace + ':')
@@ -376,27 +409,8 @@ def Normal_convert(cmdLine,selectorList,convType):
             jsonString = jsonString.replace(',"text"','TMP_0',1).replace(',"text"','},{"text"').replace('TMP_0',',"text"',)
         else:
             jsonString = jsonString.replace('},{',',')
-        rawColorList = []
-        colorPos = 0
-        for i in range(jsonString.count('§')):
-            #text内に存在するセクションの数
-            colorPos = jsonString.rfind('§')
-            #colorTypeを格納し、色指定部分を削除
-            colorType = jsonString[colorPos+1]
-            rawColorList.append(colorType)
-            jsonString = jsonString[::-1].replace(colorType + '§','__ROLOC',1)[::-1]
-            print('colorType ' + colorType + ' colorPos ' + str(colorPos))
-        print(str(rawColorList))
 
-        for i in range(len(rawColorList)):
-            for j in range(len(colorList)):
-                if rawColorList[i] == colorList[j][0]:
-                    print('jsonString --> ' + jsonString)
-                    textInColorPos = jsonString.find('COLOR_')
-                    jsonTemp = jsonString[textInColorPos:jsonString.find('}',textInColorPos)+1].replace('}',',' + colorList[j][1] + '}',1)
-                    print(jsonString.find('}',textInColorPos))
-                    jsonString = jsonString.replace(jsonString[textInColorPos:jsonString.find('}',textInColorPos)+1],jsonTemp).replace('COLOR__','',1).replace(',}','}')
-
+        jsonString = json_color_type_convert(jsonString)
         cmdLine += jsonString
         ncResult = cmdLine
     elif cmdLine.startswith("spreadplayers"):
@@ -426,7 +440,6 @@ def Normal_convert(cmdLine,selectorList,convType):
         print("[nc]List import --> " + selectorList[i])
         ncResult = ncResult.replace('SELECTOR_',selectorList[i],1)
         print("[nc]セレクターを置換しました。 --> " + ncResult)
-    #######ここで何故かセレクターを置換してくれないので明日やる
     print("ncResult --> " + ncResult)
     return ncResult
 #################################################################################################################
@@ -655,26 +668,29 @@ textRead = open(srcPath, "r", encoding="utf_8")
 beforeText = textRead.readlines()
 textRead.close()
 
-cnt = len(beforeText)
 print("変換テキストを読み込みました。")
-for i in range(0,cnt):
+for i in range(0,len(beforeText)):
     beforeText[i] = re.sub('\n','',beforeText[i])
     beforeText[i] = re.sub('\ufeff','',beforeText[i])
-    if beforeText[i] == '':
-        beforeText[i] = ' '
-
-for line in range(0,cnt):
+#    if beforeText[i] == '':
+#        beforeText[i] = ' '
+afterText = []
+for line in range(0,len(beforeText)):
     lineText = re.sub('\n','',beforeText[line])
     print("変換処理を実行します <-- " + lineText)
+    globalAddCmd = ''
     if lineText != '':
-        beforeText[line] = str(command_text_convert(lineText) + "\n")
+        afterText.append(str(command_text_convert(lineText) + "\n"))
     else:
-        beforeText[line] = " \n"
-    #空白行があると処理が終了してしまう問題があるので修正する
+        afterText.append("\n")
     print("result = " + beforeText[line])
+    if globalAddCmd != '':
+        afterText.append(globalAddCmd + '\n')
+        print('afterTextが存在するため追加 -->' + globalAddCmd)
+        globaladdCmd = ''
 
 outText = open(dstPath, 'a', encoding='UTF-8')
-outText.writelines(beforeText)
+outText.writelines(afterText)
 outText.close
 
 print("変換が終了しました。UTF-8Nで再読込を行って保存してください。")

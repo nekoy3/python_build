@@ -72,3 +72,4 @@ effect @e resistance 0 0
 scoreboard players operation @s test987j9uq34 += @a[lm=40] test987j9uq34
 scoreboard players operation @a[lm=40] test987j9uq34 += @a[lm=40] test987j9uq34
 scoreboard players operation @s test987j9uq34 += @s test987j9uq34
+scoreboard objectives add test987j9uq34 dummy "§aこれはテスト ディスプレイです"
