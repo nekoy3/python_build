@@ -88,13 +88,11 @@ gameruleList = [['commandblockoutput','commandBlockOutput'],['dodaylightcycle','
 ##################################################################################################################
 def argument_convert_main(selectorArgument):
     selectorArgument = selectorArgument.replace(']','')
-    argListOld = []
-    argListTemp = []
+    argListOld = [] ; argListTemp = []
+
     selEntity = selectorArgument[0:2]
-
-    argFlag = True
     posArg = selectorArgument.rfind(',')
-
+    argFlag = True
     if posArg == -1:
         argListOld.append(selectorArgument[3:])
         argFlag = False
@@ -110,8 +108,6 @@ def argument_convert_main(selectorArgument):
             argListOld.append(selectorArgument[endArg+1:])
             print("[convArg]複数の引数を抜き取りました。 --> " + str(argListOld))
             break
-    
-    argCnt = len(argListOld)
 
     distanceBuild = disMin = disMax = False
     levelBuild = levMin = levMax = False
@@ -131,92 +127,45 @@ def argument_convert_main(selectorArgument):
         if selTemp.startswith(("type=","name=","x=","y=","z=","dx=","dy=","dz=","scores=","tag=")):
             print("[convArg]変換不要引数です --> " + selTemp)
             argListTemp.append(selTemp)
-        elif selTemp.startswith("r="):
-            distanceBuild = True
-            disMax = selTemp[2:]
-        elif selTemp.startswith("rm="):
-            distanceBuild = True
-            disMin = selTemp[3:]
-        elif selTemp.startswith("l="):
-            levelBuild = True
-            levMax = selTemp[2:]
-        elif selTemp.startswith("lm="):
-            levelBuild = True
-            levMin = selTemp[2:]
-        elif selTemp.startswith("rx="):
-            xrotBuild = True
-            xrotMax = selTemp[3:]
-        elif selTemp.startswith("rxm="):
-            xrotBuild = True
-            xrotMin = selTemp[4:]
-        elif selTemp.startswith("ry="):
-            yrotBuild = True
-            yrotMax = selTemp[3:]
-        elif selTemp.startswith("rym="):
-            yrotBuild = True
-            yrotMin = selTemp[4:]
+        elif selTemp.startswith("r="): distanceBuild = True ; disMax = selTemp[selTemp.find('=')+1:]
+        elif selTemp.startswith("rm="): distanceBuild = True ; disMin = selTemp[selTemp.find('=')+1:]
+        elif selTemp.startswith("l="): levelBuild = True ; levMax = selTemp[selTemp.find('=')+1:]
+        elif selTemp.startswith("lm="): levelBuild = True ; levMin = selTemp[selTemp.find('=')+1:]
+        elif selTemp.startswith("rx="): xrotBuild = True ; xrotMax = selTemp[selTemp.find('=')+1:]
+        elif selTemp.startswith("rxm="): xrotBuild = True ; xrotMin = selTemp[selTemp.find('=')+1:]
+        elif selTemp.startswith("ry="): yrotBuild = True ; yrotMax = selTemp[selTemp.find('=')+1:]
+        elif selTemp.startswith("rym="): yrotBuild = True ; yrotMin = selTemp[selTemp.find('=')+1:]
         elif selTemp.startswith("m="):
             print("[convArg]gamemode引数に変換します。 --> " + selTemp)
             selTemp = str(re.sub('m=','gamemode=',selTemp))
-            if selTemp.endswith("a"):
-                selTemp += "dventure"
-            elif selTemp.endswith("c"):
-                selTemp += "reative"
-            elif selTemp.endswith("s"):
-                selTemp += "urvival"
+            if selTemp.endswith("a"): selTemp += "dventure"
+            elif selTemp.endswith("c"): selTemp += "reative"
+            elif selTemp.endswith("s"): selTemp += "urvival"
             argListTemp.append(selTemp)
         elif selTemp.startswith("c="):
             print("[convArg]limit引数に変換します。 --> " + selTemp)
             argListTemp.append(str(re.sub('c=','limit=',selTemp)))
-        elif selTemp.startswith("DELETED"):
-            selTemp = ""
-        else:
-            print("[convArg]例外エラー : " + selTemp)
-            argListTemp.append(selTemp)
+        elif selTemp.startswith("DELETED"): selTemp = ""
+        else: print("[convArg]例外エラー : " + selTemp) ; argListTemp.append(selTemp)
 
-    if disMin == False:
-        disMin = ""
-    if disMax == False:
-        disMax = ""
-    if levMin == False:
-        levMin = ""
-    if levMax == False:
-        levMax = ""
-    if xrotMin == False:
-        xrotMin = ""
-    if xrotMax == False:
-        xrotMax = ""
-    if yrotMin == False:
-        yrotMin = ""
-    if yrotMax == False:
-        yrotMax = ""
+    if disMin == False: disMin = ""
+    if disMax == False: disMax = "" 
+    if levMin == False: levMin = "" 
+    if levMax == False: levMax = "" 
+    if xrotMin == False: xrotMin = "" 
+    if xrotMax == False: xrotMax = "" 
+    if yrotMin == False: yrotMin = "" 
+    if yrotMax == False: yrotMax = "" 
 
-    if distanceBuild:
-        print("[convArg]distance引数を生成します。 ")
-        disArg = "distance=" + disMin + ".." + disMax
-        argListTemp.append(disArg)
-    if levelBuild:
-        print("[convArg]level引数を生成します。 ")
-        levArg = "level" + levMin + ".." + levMax
-        argListTemp.append(levArg)
-    if xrotBuild:
-        print("[convArg]x_rotation引数を生成します。 ")
-        xrotArg = "x_rotation=" + xrotMin + ".." + xrotMax
-        argListTemp.append(xrotArg)
-    if yrotBuild:
-        print("[convArg]y_rotation引数を生成します。 ")
-        yrotArg = "y_rotation=" + yrotMin + ".." + yrotMax
-        argListTemp.append(yrotArg)
-
-    print("[convArg]現在の引数の数 --> " + str(len(argListTemp)) + "\n" + str(argListTemp))
+    if distanceBuild: print("[convArg]distance引数を生成します。 ") ; disArg = "distance=" + disMin + ".." + disMax ; argListTemp.append(disArg)
+    if levelBuild: print("[convArg]level引数を生成します。 ") ; levArg = "level=" + levMin + ".." + levMax ; argListTemp.append(levArg)
+    if xrotBuild: print("[convArg]x_rotation引数を生成します。 ") ; xrotArg = "x_rotation=" + xrotMin + ".." + xrotMax ; argListTemp.append(xrotArg)
+    if yrotBuild: print("[convArg]y_rotation引数を生成します。 ") ; yrotArg = "y_rotation=" + yrotMin + ".." + yrotMax ; argListTemp.append(yrotArg)
     
-    argCnt = len(argListTemp)
-    print("最終的な引数の数 <-- " + str(argCnt) + "\nArglist -->" + str(argListTemp))
     outLineArg = selEntity + "["
-    while argCnt >= 2:
-        outLineArg = outLineArg + argListTemp[argCnt-1] + ","
-        argCnt -= 1
-    outLineArg = outLineArg + argListTemp[argCnt-1] + ']'
+    if len(argListTemp) > 1:
+        for i in range(len(argListTemp)-1,0,-1) : outLineArg = outLineArg + argListTemp[i] + ","
+    outLineArg = outLineArg + argListTemp[0] + ']'
     return outLineArg
 ##################################################################################################################
 def argument_convert(lineArg):
@@ -469,12 +418,9 @@ def type_convert(cmdEnume,convType,detList):
         result = cmdEnume
         return result,TCmode
     #tcList配列をexecuteResultCmd変数に置き換えた executeコマンドの配列はseparateExecute配列
-    separateExecute = list()
-    separateExecute.clear()
-    getSelList = list()
-    getSelList.clear()
-    tempSeparate = list()
-    tempSeparate.clear()
+    separateExecute = []
+    getSelList = []
+    tempSeparate = []
 
     #バラけてコマンドを分解するがcmdEnumeに返しセレクタはgetSelListに格納される
     tcSelectorCnt = tcSelectorCnt_afterSeparate = cmdEnume.count('@')
@@ -505,9 +451,8 @@ def type_convert(cmdEnume,convType,detList):
         cmdEnume += tempSeparate[i]
     print("type_convert / getSelList = " + str(getSelList) + " tcSelectorCnt = " + str(tcSelectorCnt) + "\ncmdEnume = " + str(cmdEnume))
     #セレクターが存在しないコマンドの対処
-    if cmdEnume == '':
+    if cmdEnume == '': 
         cmdEnume = tempSeparate[0]
-
     #convType=1はexecuteコマンドに対応
     if convType == 1:
         cmdEnume,executeResultCmd = separate_execute_cmd(cmdEnume)
@@ -515,12 +460,12 @@ def type_convert(cmdEnume,convType,detList):
             return cmdEnume,TCmode
         print("[type_convert]通常コマンド分離後 --> " + str(executeResultCmd))
         enumeExeCnt = cmdEnume.count('execute')
-        while enumeExeCnt >= 2:
-            separatePos = cmdEnume.rfind('execute')
-            print("[type_convert]execute抜き取り --> " + cmdEnume[separatePos:])
-            separateExecute.append(cmdEnume[separatePos:])
-            cmdEnume = cmdEnume[:separatePos-1]
-            enumeExeCnt -= 1
+        if enumeExeCnt >= 2:
+            for i in range(enumeExeCnt-1):
+                separatePos = cmdEnume.rfind('execute')
+                print("[type_convert]execute抜き取り --> " + cmdEnume[separatePos:])
+                separateExecute.append(cmdEnume[separatePos:])
+                cmdEnume = cmdEnume[:separatePos-1]
         separateExecute.append(cmdEnume)
 
         #execute以外も、SELECTOR_代入は最後実行する。
@@ -589,48 +534,20 @@ def list_in_execute_and_other_command(cmdLineWrite,exePos,TCmode,convType):
 def command_text_convert(cmdLine):
     multiCmd = False
     typeConvert = True
-    if cmdLine.startswith("#"):
-        print("コメント行です。")
-        convType = 0
-    elif cmdLine.startswith("\n"):
-        print("空白行です。")
-        convType = 0
-    elif cmdLine.startswith("execute"):
-        print("executeコマンドです。")
-        convType = 1
-    elif cmdLine.startswith("experience") or cmdLine.startswith("xp"):
-        print("xpコマンドもしくはexperienceコマンドです。")
-        convType = 2
-    elif cmdLine.startswith("tp") or cmdLine.startswith("teleport"):
-        print("tpコマンドもしくはteleportコマンドです。")
-        convType = 3
-    elif cmdLine.startswith("scoreboard"):
-        print("scoreboardコマンドです。")
-        convType = 4
-    elif cmdLine.startswith("spreadplayers"):
-        print("spreadplayersコマンドです。")
-        convType = 5
-    elif cmdLine.startswith("function"):
-        print("functionコマンドです。")
-        convType = 6
-    elif cmdLine.startswith("tellraw"):
-        print("tellrawコマンドです。")
-        convType = 7
-    elif cmdLine.startswith("titleraw"):
-        print("titlerawコマンドです。")
-        convType = 7
-    elif cmdLine.startswith("effect"):
-        print("effectコマンドです。")
-        convType = 8
-    elif cmdLine.startswith("tag"):
-        print("tagコマンドです。")
-        convType = 9
-    elif cmdLine.startswith("gamerule"):
-        print("gameruleコマンドです。")
-        convType = 10
-    elif cmdLine.startswith("gamemode"):
-        print("gamemodeコマンドです。")
-        convType = 11
+    if cmdLine.startswith("#"): print("コメント行です。") ; convType = 0
+    elif cmdLine.startswith("\n"): print("空白行です。") ; convType = 0
+    elif cmdLine.startswith("execute"): print("executeコマンドです。") ; convType = 1
+    elif cmdLine.startswith("experience") or cmdLine.startswith("xp"): print("xpコマンドもしくはexperienceコマンドです。") ; convType = 2
+    elif cmdLine.startswith("tp") or cmdLine.startswith("teleport"): print("tpコマンドもしくはteleportコマンドです。") ; convType = 3
+    elif cmdLine.startswith("scoreboard"): print("scoreboardコマンドです。") ; convType = 4
+    elif cmdLine.startswith("spreadplayers"): print("spreadplayersコマンドです。") ; convType = 5
+    elif cmdLine.startswith("function"): print("functionコマンドです。") ; convType = 6
+    elif cmdLine.startswith("tellraw"): print("tellrawコマンドです。") ; convType = 7
+    elif cmdLine.startswith("titleraw"): print("titlerawコマンドです。") ; convType = 7
+    elif cmdLine.startswith("effect"): print("effectコマンドです。") ; convType = 8
+    elif cmdLine.startswith("tag"): print("tagコマンドです。") ; convType = 9
+    elif cmdLine.startswith("gamerule"): print("gameruleコマンドです。") ; convType = 10
+    elif cmdLine.startswith("gamemode"): print("gamemodeコマンドです。") ; convType = 11
     else:
         print("コマンド構文自体の変換は必要ありません。")
         for i in range(ALL_COMMAND_CNT,0,-1):
