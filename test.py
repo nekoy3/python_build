@@ -323,15 +323,16 @@ def Normal_convert(cmdLine,selectorList,convType):
             ncResult = cmdLine
             print("[nc]tp/teleportコマンドに変換は不要です。")
     elif cmdLine.startswith("scoreboard"):
+        print("[nc]scoreboardコマンドを検証します。")
         if cmdLine.startswith("scoreboard objectives add"):
             try:
                 displayName = re.sub(r'dummy\s','',re.search(r'dummy\s.+',cmdLine).group())
             except:
                 displayName = ''
             if displayName != '':
-                scoreboardName = cmdLine.rsplit(None,4)[2]
+                scoreboardName = cmdLine.rsplit(None,4)[1]
+                print(cmdLine.rsplit(None,4))
             cmdLine = re.sub(r'dummy\s.+','dummy',cmdLine)
-        print("[nc]scoreboardコマンドを検証します。")
         try:
             tempPM = re.search(r'add\s.+\s.+-',cmdLine).group()
         except:

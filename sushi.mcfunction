@@ -1,4 +1,4 @@
-#NEKOYAMA Converter 2021/08/21 17:16:03 converted
+#NEKOYAMA Converter 2021/08/21 17:35:26 converted
 #統合版用にfunctionを作成し動作を確認する。
 #コンバートスクリプトにかけても問題なく動作するかをチェックする。
 #コンバート前をconvert_test.mcfunctionとし、コンバート後をconvert_after.mcfunctionとする。
@@ -51,18 +51,18 @@ execute as @a[gamemode=!creative] at @s if block ~ ~ ~ air as @s at @s if block 
 tellraw @a {"text":"開始までのカウントダウンを開始します"} 
 tellraw @a {"text":"開始までのカウントダウンを開始します","color":"yellow"} 
 tellraw @a ["",{"text":"test","obfuscated":true},{"text":"testtesttest","color":"green"},{"text":"test","obfuscated":true,"bold":true,"color":"green","color":"green"}]
-execute as @e[tag=select,scores={actNum=1}] at @s as @s[tag=!randomSelected] at @s run function namearea:neconvfunction_/rnumber_sst5tzj4
+execute as @e[tag=select,scores={actNum=1}] at @s as @s[tag=!randomSelected] at @s run function namearea:neconvfunction_/rnumber_dxx4saq4
 execute as @a[level=30..] at @s run scoreboard players remove @s test987j9uq34 14 
 execute as @a[level=30..] at @s run scoreboard players add @s test987j9uq34 14 
 scoreboard players add @s test987j9uq34 14
 scoreboard objectives add example1231 dummy
-scoreboard objectives modify example1231 displayname {"text":"これはexampleかもしれない"}
+scoreboard objectives modify add displayname {"text":"これはexampleかもしれない"}
 scoreboard objectives add jioagjk dummy
 scoreboard players add test example1231 1
 scoreboard objectives remove test987j9uq34
 tag @a remove test73482b3r2
 scoreboard objectives add test987j9uq34 dummy
-function namearea:neconvfunction_/rnumber_cmpj0dm0
+function namearea:neconvfunction_/rnumber_xr50e46j
 summon armor_stand -48 248 -122
 execute as @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,gamemode=adventure] at @s if block ~ ~-1 ~ tnt run tp @s ~ ~-1 ~ 
 execute as @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,gamemode=adventure] at @s if block ~ ~-1 ~ redstone_block run tp @s ~ ~-1 ~ 
@@ -73,11 +73,11 @@ execute as @a[level=30..] at @s run effect clear @e resistance
 effect clear @e resistance 
 effect clear @e instant_health
 scoreboard players operation @s test987j9uq34 += @s test987j9uq34
-scoreboard objectives add test987j9uq34 dummy
-scoreboard objectives modify dummy displayname {"text":"これはテスト ディスプレイです","color":"green"}
 execute as @a at @s run scoreboard players operation @s test987j9uq34 += @a[level=40..] test987j9uq34 
 execute as @e[tag=select,scores={cl=1..1000}] at @s run effect clear @e[tag=clear] invisibility 
 scoreboard players operation @a[level=40..60,name="な は"] test987j9uq34 += @a[level=40..,distance=..5] test987j9uq34
 execute as @e[tag=select,scores={cl=1..1000}] at @s run tag @e remove testmode
 execute as @e[tag=select,scores={cl=1..1000}] at @s run gamemode adventure @a[gamemode=survival] 
 execute as @e[tag=select,scores={cl=1..1000}] at @s run gamerule sendCommandFeedback false
+scoreboard objectives add test987j9uq34 dummy
+scoreboard objectives modify test987j9uq34 displayname {"text":"これはテスト ディスプレイです","color":"green"}

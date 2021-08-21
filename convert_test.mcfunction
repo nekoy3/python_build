@@ -71,10 +71,10 @@ execute @a[lm=30] ~ ~ ~ effect @e resistance 0 0
 effect @e resistance 0 0
 effect @e instant_health 0
 scoreboard players operation @s test987j9uq34 += @s test987j9uq34
-scoreboard objectives add test987j9uq34 dummy "§aこれはテスト ディスプレイです"
 execute @a ~ ~ ~ scoreboard players operation @s test987j9uq34 += @a[lm=40] test987j9uq34
 execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ effect @e[tag=clear] invisibility 0 0 true
 scoreboard players operation @a[l=60,lm=40,name="な は"] test987j9uq34 += @a[lm=40,r=5] test987j9uq34
 execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ tag * remove testmode
 execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ gamemode a @a[m=s]
 execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ gamerule sendcommandfeedback false
+scoreboard objectives add test987j9uq34 dummy "§aこれはテスト ディスプレイです"
