@@ -83,75 +83,48 @@ ALL_COMMAND = ['clear ','clone ','difficulty ','effect ','enchant ','event ','xp
 ALL_COMMAND_CNT = len(ALL_COMMAND)
 colorList = [['0','"color":"black"'],['1','"color":"dark_blue"'],['2','color":"dark_green"'],['3','color":"dark_aqua"'],['4','color":"dark_red"'],['5','color":"dark_purple"'],['6','color":"gold"'],['7','"color":"gray"'],['8','"color":"dark_gray"'],['9','"color":"blue"'],['a','"color":"green"'],['b','"color":"aqua"'],['c','"color":"red"'],['d','"color":"light_purple"'],['e','"color":"yellow"'],['f','"color":"white"'],['k','"obfuscated":true'],['l','"bold":true'],['m','"strikethrough":true'],['n','"underlined":true'],['o','"italic":true'],['r','']]
 musicConvList = [['random.totem','item.totem.use'],['random.levelup','entity.player.levelup'],['random.orb','entity.experience_orb.pickup']]
+gameruleList = [['commandblockoutput','commandBlockOutput'],['dodaylightcycle','doDaylightCycle'],['doentitydrops','doEntityDrops'],['dofiretick','doFireTick'],['domobloot','doMobLoot'],['domobspawning','doMobSpawning'],['dotiledrops','doTileDrops'],['doweathercycle','doWeatherCycle'],['keepinventory','keepInventory'],['mobgriefing','mobGriefing'],['sendcommandfeedback','sendCommandFeedback']]
 
 ##################################################################################################################
-def argument_convert(lineArg):
-    argChecker = re.search(r'\@.\[',lineArg)
-    if argChecker == None:
-        print("[引数変換]引数付きセレクタを判定出来ませんでした。無変換で続行します。")
-        print("CMD:" + lineArg)
-        return lineArg
-    argCnt = lineArg.count(r'\@.\[')
-    #セレクタの重複は分割してこの関数を実行してセレクタが一個の状態でのみ動作するものとする
-    if argCnt >= 2:
-        print("[引数変換]セレクタを二個以上判定しました。 Selector:" + str(argCnt))
-        print("errorCMD:" + lineArg)
-        exit()
-        
-    #lineArg = "execute @e[type=armor_stand]"
-    getArg = re.search(r'\@.\[(.+)\]',lineArg).group(0)[:-1]
-    lineArg = lineArg.replace(getArg,'SELECTOR_')
-    print("IN:" + str(getArg))
-    argListOld = list()
-    argList = list()
-    argListTemp = list()
-    argListOld.clear()
-    argList.clear()
-    argListTemp.clear()
-    selEntity = getArg[0:2]
-    #selEntityはセレクタのタイプを保存し、後から構成するときに使用
+def argument_convert_main(selectorArgument):
+    selectorArgument = selectorArgument.replace(']','')
+    argListOld = []
+    argListTemp = []
+    selEntity = selectorArgument[0:2]
 
-    #引数を抜き取ってargListOldリストに追加していく
-    #getArg<@e[type=!player,r=3 <--最後の,の文字数目を取得(posArg)し
-    #posArg+1文字目から最後までの文字列を抜き取る
     argFlag = True
-    posArg = getArg.rfind(',')
-    #scores引数内コロンを区別するため、あらかじめargListOldに追加しDELETEDとして続行する
+    posArg = selectorArgument.rfind(',')
 
     if posArg == -1:
-        argListOld.append(getArg[3:])
+        argListOld.append(selectorArgument[3:])
         argFlag = False
         print("[convArg]引数が一つのため、抜き取りました。 --> " + str(argListOld))
         
     while argFlag:
-        #最初から引数がないとposArg=-1
-        posArg = getArg.rfind(',')
-        ArgCnt = getArg.count(',')
-        argListOld.append(getArg[posArg+1:])
-        getArg = getArg[:posArg]
-        #print(getArg)
+        posArg = selectorArgument.rfind(',')
+        ArgCnt = selectorArgument.count(',')
+        argListOld.append(selectorArgument[posArg+1:])
+        selectorArgument = selectorArgument[:posArg]
         if ArgCnt <= 1:
-            endArg = getArg.rfind('[')
-            #print(str(getArg) + " " + str(endArg))
-            argListOld.append(getArg[endArg+1:])
+            endArg = selectorArgument.rfind('[')
+            argListOld.append(selectorArgument[endArg+1:])
             print("[convArg]複数の引数を抜き取りました。 --> " + str(argListOld))
             break
     
     argCnt = len(argListOld)
 
-    #引数を変換するための一部特殊構成引数構築のためのフラグ
     distanceBuild = disMin = disMax = False
     levelBuild = levMin = levMax = False
     xrotBuild = xrotMin = xrotMax = False
     yrotBuild = yrotMin = yrotMax = False
     print("Oldの引数は" + str(len(argListOld)) + "個です。")
     try:
-        argListTemp.append(re.search(r'scores=\{.\,*.*\}',getArg).group(0))
+        argListTemp.append(re.search(r'scores=\{.\,*.*\}',selectorArgument).group(0))
     except:
         print("[convArg]scores引数はありません。")
     else:
         print("[convArg]scores引数を取得しました。 --> " + argListTemp[0])
-        getArg = re.sub(argListTemp[0],'DELETED',getArg)
+        selectorArgument = re.sub(argListTemp[0],'DELETED',selectorArgument)
     for i in range(0,len(argListOld)):
         selTemp = argListOld[i]
         print("selTemp --> " + selTemp)
@@ -237,18 +210,42 @@ def argument_convert(lineArg):
 
     print("[convArg]現在の引数の数 --> " + str(len(argListTemp)) + "\n" + str(argListTemp))
     
-    #めんどくさいので代入
-    argList = argListTemp
-
-    argCnt = len(argList)
-    print("最終的な引数の数 <-- " + str(argCnt) + "\nArglist -->" + str(argList))
-    #outLineArg = "@" + selEntity + "["
+    argCnt = len(argListTemp)
+    print("最終的な引数の数 <-- " + str(argCnt) + "\nArglist -->" + str(argListTemp))
     outLineArg = selEntity + "["
     while argCnt >= 2:
-        outLineArg = outLineArg + argList[argCnt-1] + ","
+        outLineArg = outLineArg + argListTemp[argCnt-1] + ","
         argCnt -= 1
-    outLineArg = outLineArg + argList[argCnt-1]
-    lineArg = lineArg.replace('SELECTOR_',outLineArg)
+    outLineArg = outLineArg + argListTemp[argCnt-1] + ']'
+    return outLineArg
+##################################################################################################################
+def argument_convert(lineArg):
+    argChecker = re.search(r'\@.\[',lineArg)
+    if argChecker == None:
+        print("[引数変換]引数付きセレクタを判定出来ませんでした。無変換で続行します。")
+        print("CMD:" + lineArg)
+        return lineArg
+    multiArgList = []
+    print(lineArg.split())
+    for i in range(len(lineArg.split())):
+        try:
+            tempArg = re.search(r'\@.\[.+',lineArg.split()[i]).group()
+        except AttributeError:
+            tempArg = None
+        else:
+            print('引数付きｾﾚｸﾀを取得 -->' + tempArg)
+            #name引数等で途中に空白があった場合、次の分割要素と合成する
+            if tempArg.count(']') == 0:
+                multiArgList.append(tempArg + ' ' + lineArg.split()[i+1])
+            else:
+                multiArgList.append(tempArg)
+
+    for i in range(len(multiArgList)):
+        lineArg = lineArg.replace(multiArgList[i],'SELECTOR_')
+        print("IN:" + str(multiArgList[i]))
+        multiArgList[i] = argument_convert_main(multiArgList[i])
+        lineArg = lineArg.replace('SELECTOR_',multiArgList[i])
+
     print("引数変換後出力 = " + lineArg)
     return lineArg
 #################################################################################################################
@@ -426,10 +423,32 @@ def Normal_convert(cmdLine,selectorList,convType):
         ncResult = cmdLine
     elif cmdLine.startswith("effect"):
         print("[nc]effectコマンドを変換します。 --> " + cmdLine)
-        if re.search('0 0',cmdLine):
-            cmdLine = re.sub('effect ','effect clear ',re.sub('0 0','',cmdLine))
+        cmdLine += ' '
+        if re.search('0 0 ',cmdLine):
+            cmdLine = re.sub('effect ','effect clear ',re.sub('0 0 ','',cmdLine.replace(' true','').replace(' false','')))
+        elif re.search(' 0 ',cmdLine):
+            cmdLine = re.sub('effect ','effect clear ',re.sub(' 0 ','',cmdLine.replace(' true','').replace(' false','')))
         else:
             cmdLine = re.sub('effect ','effect give ',cmdLine)
+        ncResult = cmdLine
+    elif cmdLine.startswith("tag"):
+        print("[nc]tagコマンドを検証します。")
+        if cmdLine.split()[1] == '*':
+            cmdLine = re.sub('\*','@e',cmdLine,1)
+        ncResult = cmdLine
+    elif cmdLine.startswith("gamerule"):
+        print("[nc]gameruleコマンドを検証します。互換性がないルールは据え置かれます。名称が変更されたルールは変換します。")
+        for i in range(len(gameruleList)):
+            cmdLine = re.sub(gameruleList[i][0],gameruleList[i][1],cmdLine)
+        ncResult = cmdLine
+    elif cmdLine.startswith("gamemode"):
+        print("[nc]gamemodeコマンドを検証します。")
+        if cmdLine.find("a SELECTOR_"):
+            cmdLine = re.sub("a SELECTOR_","adventure SELECTOR_",cmdLine)
+        elif cmdLine.find("c SELECTOR_"):
+            cmdLine = re.sub("c SELECTOR_","creative SELECTOR_",cmdLine)
+        elif cmdLine.find("s SELECTOR_"):
+            cmdLine = re.sub("s SELECTOR_","survival SELECTOR_",cmdLine)
         ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
@@ -602,6 +621,15 @@ def command_text_convert(cmdLine):
     elif cmdLine.startswith("effect"):
         print("effectコマンドです。")
         convType = 8
+    elif cmdLine.startswith("tag"):
+        print("tagコマンドです。")
+        convType = 9
+    elif cmdLine.startswith("gamerule"):
+        print("gameruleコマンドです。")
+        convType = 10
+    elif cmdLine.startswith("gamemode"):
+        print("gamemodeコマンドです。")
+        convType = 11
     else:
         print("コマンド構文自体の変換は必要ありません。")
         for i in range(ALL_COMMAND_CNT,0,-1):
@@ -634,13 +662,17 @@ def command_text_convert(cmdLine):
         print("ループ前executeの位置:" + str(exePos) + "\n" + cmdLine)
         #複数のセレクタがある→分解しcmdExeTestに入る。
         exeConvMulti = True
-        if exePos == 0:
+        if exePos == -1:
+            #引数が複数あっても実行できるように変更
+            cmdLine = argument_convert(cmdLine)
+            print("executeコマンドを検知しませんでした。")
+        elif exePos == 0:
             cmdLine,typeConvert = list_in_execute_and_other_command(cmdLine,exePos,typeConvert,convType)
             exeConvMulti = False
-            print("executeコマンドを検知しませんでした。")
-        if exePos >= 1 and exeConvMulti:
+            print("executeコマンドを1個検知しました。")
+        elif exePos >= 1 and exeConvMulti:
             cmdLine,typeConvert = list_in_execute_and_other_command(cmdLine,exePos,typeConvert,convType)
-            print("executeコマンドを1個以上検知しました。")
+            print("executeコマンドを2個以上検知しました。")
             multiCmd = True
 
         #list_in_execute_and_other_command が引数変換、execute分解まで実行する
@@ -672,8 +704,6 @@ print("変換テキストを読み込みました。")
 for i in range(0,len(beforeText)):
     beforeText[i] = re.sub('\n','',beforeText[i])
     beforeText[i] = re.sub('\ufeff','',beforeText[i])
-#    if beforeText[i] == '':
-#        beforeText[i] = ' '
 afterText = []
 for line in range(0,len(beforeText)):
     lineText = re.sub('\n','',beforeText[line])
