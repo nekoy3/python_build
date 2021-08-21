@@ -1,0 +1,35 @@
+{
+	"format_version": 1,
+	"header": {
+		"name": "NoF.aziMAX",
+		"uuid": "3f4b9235-d9a2-415f-9e6b-b3e15eb4ca74",
+		"version": [
+			0,
+			0,
+			1
+		],
+		"description": "専用のコマンドを追加-azi",
+		"min_engine_version": [
+			1,
+			2,
+			6
+		]
+	},
+	"modules": [
+		{
+			"type": "data",
+			"uuid": "1c8d157d-67bb-3e81-8b7e-bdbad32a16de",
+			"version": [
+				0,
+				0,
+				1
+			],
+			"description": "専用のコマンドを追加します-AZI Server only"
+		}
+	],
+	"metadata": {
+		"authors": [
+			"Nekoyama 030330"
+		]
+	}
+}
