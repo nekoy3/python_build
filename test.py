@@ -400,6 +400,11 @@ def Normal_convert(cmdLine,selectorList,convType):
         elif cmdLine.find("s SELECTOR_"):
             cmdLine = re.sub("s SELECTOR_","survival SELECTOR_",cmdLine)
         ncResult = cmdLine
+    elif cmdLine.startswith("fill") or cmdLine.startswith("setblock"):
+        print("[nc]fill/setblockコマンドを検証します。")
+        if cmdLine.count(" 0 "):
+            cmdLine = re.sub(" 0 "," ",cmdLine)
+        ncResult = cmdLine
     else:
         print("[nc]形式の変換は必要ありません。")
         ncResult = cmdLine
@@ -548,6 +553,8 @@ def command_text_convert(cmdLine):
     elif cmdLine.startswith("tag"): print("tagコマンドです。") ; convType = 9
     elif cmdLine.startswith("gamerule"): print("gameruleコマンドです。") ; convType = 10
     elif cmdLine.startswith("gamemode"): print("gamemodeコマンドです。") ; convType = 11
+    elif cmdLine.startswith("fill"): print("fillコマンドです。") ; convType = 12
+    elif cmdLine.startswith("setblock"): print("setblockコマンドです。") ; convType = 13
     else:
         print("コマンド構文自体の変換は必要ありません。")
         for i in range(ALL_COMMAND_CNT,0,-1):

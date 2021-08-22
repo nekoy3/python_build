@@ -78,3 +78,4 @@ execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ tag * remove testmode
 execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ gamemode a @a[m=s]
 execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ gamerule sendcommandfeedback false
 scoreboard objectives add test987j9uq34 dummy "§aこれはテスト ディスプレイです"
+execute @e[tag=clear] ~ ~ ~ fill ~50 ~ ~50 ~ ~ ~ air 0 replace white_glazed_terracotta
