@@ -5,3 +5,6 @@ MINECRAFT_BUILD内ファイル 実際に変換するためのファイルの一�
 convert.sh test.pyを開発するための元のアルゴリズム的なもの(bash)
 Untitled-1.py 一部分だけの検証と動作確認
 sushi.mcfunction convert_testを変換実行した結果を出力したファイル（現時点での）
+quiz.py 問題ファイルを読み込むことで、ランダムに問題を出題するプログラム。
+nbt_edit.py minecraftのスコアボードデータを格納するscoreboard.datからデータを読み込むプログラム。
+scoreboard-cv2.dat nbt_edit.py用のテストファイル。
