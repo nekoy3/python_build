@@ -63,4 +63,3 @@ for i in range(1,len(scoreList)):
         object = str(codecs.decode(object, "hex"),'utf-8')
 
     print('No.' + str(i),name,object,'Score:' + str(score))
-
