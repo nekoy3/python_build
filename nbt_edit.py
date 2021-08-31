@@ -63,4 +63,12 @@ for i in range(1,len(scoreList)):
         object = str(codecs.decode(object, "hex"),'utf-8')
 
     print('No.' + str(i),name,object,'Score:' + str(score))
+    dataList.append([name,object,score])
 
+try:
+    act = args[2].rstrip().split(',')
+except:
+    print('検索タイプとキーワードを入力してください。(コンマ区切り)\nn/name o/objective s/score(範囲lt(number)-mt(number))\nもう一つt/fでスコアソート順を設定できます。tは降順、fは昇順。')
+    act = input().rstrip().split(',')
+
+print(act)
