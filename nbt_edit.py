@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import codecs
+import gzip
 
 args = sys.argv
 try:
@@ -15,19 +16,19 @@ if os.path.exists(srcPath):
 else:
     print("ファイルパスが無効です。")
     exit()
-textRead = open(srcPath, 'rb')
-mainText = textRead.read()
-textRead.close()
 
-#「Name」「Objective」「Score」の文字がオブジェクトや名前で使用されていると正常に動作しません。
+with gzip.open(srcPath) as f:
+    mainText = f.read()
 
-#不要な部分は削除します。Objectives以降のコードを削除
+#「Name」「Objective」「Score」の文字がオブジェクトや名前で使用されていてもある程度動作するように修正
+
+#不要な部分は削除する。Objectives以降のコードを削除
 num = str(mainText.hex()).find('4f626a65637469766573') #sは0x73
 searchText = mainText.hex()[:num]
 scoreList = searchText.split('00080009')
 
-scoreHex = '53636f7265'
-nameHex = '4e616d65'
+scoreHex = '000553636f7265'
+nameHex = '00044e616d65'
 objectiveHex = '4f626a656374697665'
 dataList = []
 for i in range(1,len(scoreList)):
@@ -40,7 +41,10 @@ for i in range(1,len(scoreList)):
     else:
         score = scoreList[i].rfind(scoreHex) + len(scoreHex)
         score = scoreList[i][score:score+8]
-    score = int(score, 16)
+
+    #符号ビット処理
+    score = int(score, 16) #16進数を整数として代入する。整数であってもMSBが符号ビットであることに変わりはないので下行で計算する。
+    score = (int(score^0xffffffff) * -1)-1  if (score & 0x80000000) else int(score)
 
     try:
         nameStr = re.search(nameHex + r'.{4}' , str(scoreList[i])).group().replace(nameHex,'') #name後の2byteで文字列の長さを表示
@@ -62,13 +66,114 @@ for i in range(1,len(scoreList)):
         object = scoreList[i][base:base + objectStr*2]
         object = str(codecs.decode(object, "hex"),'utf-8')
 
-    print('No.' + str(i),name,object,'Score:' + str(score))
     dataList.append([name,object,score])
 
-try:
-    act = args[2].rstrip().split(',')
-except:
-    print('検索タイプとキーワードを入力してください。(コンマ区切り)\nn/name o/objective s/score(範囲lt(number)-mt(number))\nもう一つt/fでスコアソート順を設定できます。tは降順、fは昇順。')
-    act = input().rstrip().split(',')
+getDataList = dataList
+resultList = []
 
-print(act)
+def dataSort(resultList, scList, type):
+    for j in range(len(resultList)):
+        scList.append(resultList[j][2])
+    for j in range(len(scList)):
+        for k in range(j+1,len(scList)):
+            if scList[j] < scList[k] and type == 't':
+                scList[j],scList[k] = scList[k],scList[j]
+                resultList[j],resultList[k] = resultList[k],resultList[j]
+            if scList[j] > scList[k] and type == 'f':
+                scList[j],scList[k] = scList[k],scList[j]
+                resultList[j],resultList[k] = resultList[k],resultList[j]
+
+if dataList == []:
+    print('データが見つかりませんでした。')
+    exit()
+
+
+for i in range(0,5):
+    try:
+        act = args[i+2].rstrip().split(',')
+    except:
+        print('絞り込む場合、検索タイプとキーワードを入力してください。(コンマ区切り)\n0/name 1/objective 2/score(範囲mt(最小number) */1と2を兼ねる lt(最大number))\n検索ワードに*指定すると全表示します。\nもう一つt/fでスコアソート順を設定できます。tは降順、fは昇順。ソートしない場合はnを入力。\n例：0,nekoyama_cmd,t  2,mt7 lt42,f\n終了する場合はexitを入力してください。\n引数でexport指定するとファイルとして出力します。')
+        act = input().rstrip().split(',')
+    
+    if act[0] == 'exit':
+        exit()
+
+    if act[0] == 'export':
+        dirname = os.path.dirname(srcPath)
+        exportList = []
+        for j in range(len(getDataList)):
+            exportList.append('Name:' + str(getDataList[j][0]) + ' Obj:' + str(getDataList[j][1]) + ' Score:' + str(getDataList[j][2]) + '\n')
+        f = open(dirname + '/export.txt', 'w')
+        f.writelines(exportList)
+        f.close()
+        exit()
+
+    if act[1] == '*':
+        resultList = getDataList
+    else:
+        if act[0] != '*':
+            s_i = int(act[0]) #検索対象
+        else:
+            s_i = -1
+        if s_i == 2:
+            try:
+                minScore = int(re.search(r'mt-?[0-9]+',act[1]).group().replace('mt',''))
+            except:
+                print('スコア指定が不正です。')
+                exit()
+            try:
+                maxScore = int(re.search(r'lt-?[0-9]+',act[1]).group().replace('lt',''))
+            except:
+                print('スコア指定が不正です。')
+                exit()
+        elif s_i <= -2 or s_i >= 3:
+            print('検索対象指定が不正です。')
+            exit()
+        elif s_i == 0 or s_i == 1:
+            for j in range(len(getDataList)):
+                find = getDataList[j][s_i].find(act[1])
+                if find != -1:
+                    resultList.append(getDataList[j])
+        elif s_i == -1:
+            for k in range(2):
+                for j in range(len(getDataList)):
+                    find = getDataList[j][k].find(act[1])
+                    if find != -1:
+                        resultList.append(getDataList[j])
+        elif s_i == 2:
+            for j in range(len(getDataList)):
+                find = getDataList[j][s_i]
+                if find >= minScore and find <= maxScore:
+                    resultList.append(getDataList[j])
+    
+    if resultList == []:
+        print('データが見つかりませんでした。')
+        exit()
+
+    try:
+        act[2]
+    except:
+        None
+    else:
+        scList = []
+        if act[2] == 't' or act[2] == 'f':
+            dataSort(resultList, scList, act[2])
+
+    getDataList = resultList
+
+    nameLength = 0
+    for k in range(0,2):
+        for j in range(len(resultList)): #最長長さの文字数を保持
+            if nameLength < len(resultList[j][k]):
+                nameLength = len(resultList[j][k])
+        for j in range(len(resultList)): #最長長さに合わせて空白を追加
+            while nameLength > len(resultList[j][k]):
+                resultList[j][k] += ' '
+
+    try:
+        args[i+3]
+    except:
+        for j in range(len(resultList)):
+            print('Name:' + str(resultList[j][0]) + ' Obj:' + str(resultList[j][1]) + ' Score:' + str(resultList[j][2]))
+    resultList = []
+
