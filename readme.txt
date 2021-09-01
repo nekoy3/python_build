@@ -8,3 +8,5 @@ sushi.mcfunction convert_testを変換実行した結果を出力したファイ
 quiz.py 問題ファイルを読み込むことで、ランダムに問題を出題するプログラム。
 nbt_edit.py minecraftのスコアボードデータを格納するscoreboard.datからデータを読み込むプログラム。
 scoreboard-cv2.dat nbt_edit.py用のテストファイル。
+scoreboard.dat gz圧縮されたままのテストファイル（現在こっちしか使えない）
+export.txt nbt_edit.pyの出力結果
