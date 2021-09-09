@@ -83,7 +83,6 @@ def dataSort(resultList, scList, type):
                 scList[j],scList[k] = scList[k],scList[j]
                 resultList[j],resultList[k] = resultList[k],resultList[j]
 
-print(dataList)
 if dataList == []:
     print('データが見つかりませんでした。')
     exit()
