@@ -87,25 +87,36 @@ if dataList == []:
     print('データが見つかりませんでした。')
     exit()
 
-
-for i in range(0,5):
+dirname = os.path.dirname(srcPath)
+i = 0
+while True:
     try:
         act = args[i+2].rstrip().split(',')
     except:
         print('絞り込む場合、検索タイプとキーワードを入力してください。(コンマ区切り)\n0/name 1/objective 2/score(範囲mt(最小number) */1と2を兼ねる lt(最大number))\n検索ワードに*指定すると全表示します。\nもう一つt/fでスコアソート順を設定できます。tは降順、fは昇順。ソートしない場合はnを入力。\n例：0,nekoyama_cmd,t  2,mt7 lt42,f\n終了する場合はexitを入力してください。\n引数でexport指定するとファイルとして出力します。')
         act = input().rstrip().split(',')
-    
+
+    if act[0].startswith('type:'):
+        #typeの入力例 "[0] Score:[2]" この後は強制的にexportに移動する
+        finallyList = []
+        for i in range(len(getDataList)):
+            fiTemp = act[0].replace('type:','').replace('\"','')
+            for j in range(3):
+                fiTemp = fiTemp.replace('[' + str(j) + ']',str(getDataList[i][j]))
+            finallyList.append(fiTemp + '\n')
+        with open(dirname + '/export.txt', 'w') as f:
+            f.writelines(finallyList)
+        exit()
+
     if act[0] == 'exit':
         exit()
 
     if act[0] == 'export':
-        dirname = os.path.dirname(srcPath)
         exportList = []
         for j in range(len(getDataList)):
             exportList.append('Name:' + str(getDataList[j][0]) + ' Obj:' + str(getDataList[j][1]) + ' Score:' + str(getDataList[j][2]) + '\n')
-        f = open(dirname + '/export.txt', 'w')
-        f.writelines(exportList)
-        f.close()
+        with open(dirname + '/export.txt', 'w') as f:
+            f.writelines(exportList)
         exit()
 
     if act[1] == '*':
@@ -167,7 +178,7 @@ for i in range(0,5):
             if nameLength < len(resultList[j][k]):
                 nameLength = len(resultList[j][k])
         for j in range(len(resultList)): #最長長さに合わせて空白を追加
-            while nameLength > len(resultList[j][k]):
+            while nameLength+2 > len(resultList[j][k]):
                 resultList[j][k] += ' '
 
     try:
@@ -176,4 +187,4 @@ for i in range(0,5):
         for j in range(len(resultList)):
             print('Name:' + str(resultList[j][0]) + ' Obj:' + str(resultList[j][1]) + ' Score:' + str(resultList[j][2]))
     resultList = []
-
+    i += 1
