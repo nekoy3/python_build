@@ -25,11 +25,11 @@ execute @a[rx=60,rxm=-30,ry=87,rym=-87] ~ ~ ~ say 基本羅列変換6
 execute @a[c=5,l=7000,lm=3,scores={test987j9uq34=3..4},tag=test73482b3r2] ~ ~ ~ say 基本羅列変換7
 #基礎羅列変換8「execute as @a[name="Nekoyama 030330",tag=!sushi] at @s run say 基本羅列変換8」
 execute @a[name="Nekoyama 030330",tag=!sushi] ~ ~ ~ say 基本羅列変換8
-#基礎羅列変換9「execute as @a[gamemode=!adventure,scores={test987j9uq34=!7..23}] at @s run say 基本羅列変換9」
-execute @a[m=!a,scores={test987j9uq34=!7..23}] ~ ~ ~ say 基本羅列変換9
+#基礎羅列変換9「execute as @a[gamemode=!adventure,scores={test987j9uq34=7..23}] at @s run say 基本羅列変換9」
+execute @a[m=!a,scores={test987j9uq34=7..23}] ~ ~ ~ say 基本羅列変換9
 
 #追加分
-tp @a[m=!a,scores={test987j9uq34=!7..23}] 0 8 0
+tp @a[m=!a,scores={test987j9uq34=7..23}] 0 8 0
 scoreboard objectives remove test987j9uq34
 tag @a remove test73482b3r2
 execute @e[tag=select,scores={bp_time2=..0},type=armor_stand] ~ ~ ~ clear @a[x=-30,y=6,z=-125,dx=50,dy=10,dz=50,m=a]
@@ -42,8 +42,6 @@ execute @a[lm=50,l=300] ~ ~ ~ scoraboard players operation @s test987j9uq34 += @
 execute @a[lm=50,l=300] ~ ~ ~ scoreboard players operation @s test987j9uq34 += @a[lm=40] test987j9uq34
 execute @a ~ ~ ~ execute @e[type=zombie] ~ ~ ~ execute @p[r=50,rm=5] ~ ~ ~ execute @r[r=100] ~ ~ ~ execute @e[type=armor_stand,scores={bp_time2=..0,test987j9uq34=3..4}] ~ ~ ~ tp @p ^ ^ ^0.1 facing @p
 execute @e[type=zombie] ~ ~ ~ function sushi/sushi
-execute @a[lm=30] ~ ~ ~ scoreboard players add @s test987j9uq34 -14
-execute @a[lm=30] ~ ~ ~ scoreboard players remove @s test987j9uq34 -14
 execute @e[tag=select,scores={sn=1015,bp_time=45..140},type=armor_stand] ~ ~ ~ scoreboard players add @s bp_time -5
 execute @a[m=!c] ~ ~ ~ detect ~ ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~-1 ~ grass 0 execute @s ~ ~ ~ detect ~-1 ~-1 ~ grass 0 execute @s ~ ~ ~ detect ~1 ~-1 ~ grass 0 execute @s ~ ~ ~ detect ~ ~-1 ~-1 grass 0 execute @s ~ ~ ~ detect ~ ~-1 ~1 grass 0 execute @s ~ ~ ~ detect ~1 ~-1 ~1 grass 0 execute @s ~ ~ ~ detect ~-1 ~-1 ~1 grass 0 execute @s ~ ~ ~ detect ~1 ~-1 ~-1 grass 0 execute @s ~ ~ ~ detect ~-1 ~-1 ~-1 grass 0 execute @s ~ ~ ~ detect ~1 ~ ~ air 0 execute @s ~ ~ ~ detect ~-1 ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~ ~1 air 0 execute @s ~ ~ ~ detect ~ ~ ~-1 air 0 execute @s ~ ~ ~ detect ~1 ~ ~1 air 0 execute @s ~ ~ ~ detect ~1 ~ ~-1 air 0 execute @s ~ ~ ~ detect ~-1 ~ ~1 air 0 execute @s ~ ~ ~ detect ~-1 ~ ~-1 air 0 execute @s ~ ~ ~ detect ~ ~-4 ~ bedrock 0 execute @s ~ ~ ~ detect ~1 ~-4 ~ bedrock 0 execute @s ~ ~ ~ detect ~-1 ~-4 ~ bedrock 0 execute @s ~ ~ ~1 detect ~ ~-4 ~ bedrock 0 execute @s ~ ~ ~ detect ~ ~-4 ~-1 bedrock 0 execute @s ~ ~ ~ detect ~1 ~-4 ~1 bedrock 0 execute @s ~ ~ ~ detect ~1 ~-4 ~-1 bedrock 0 execute @s ~ ~ ~ detect ~-1 ~-4 ~1 bedrock 0 execute @s ~ ~ ~ detect ~-1 ~-4 ~-1 bedrock 0 tag @s add flat_error
 execute @a[m=!a,c=5,l=7000,lm=3,ry=180,rym=-180] ~ ~ ~ execute @p[lm=0,l=99] ~ ~ ~ tell @a[r=10] 寿司食べたいんですけど、注文いいですか？ピザ一枚。
@@ -52,3 +50,32 @@ execute @a[m=!c] ~ ~ ~ detect ~ ~ ~ air 0 execute @s ~ ~ ~ detect ~ ~-1 ~ grass 
 tellraw @a {"rawtext":[{"text":"開始までのカウントダウンを開始します"}]} 
 tellraw @a {"rawtext":[{"text":"開始までのカウントダウンを開始します"},{"color":"yellow"}]} 
 tellraw @a {"rawtext":[{"text":"§atest"},{"text":"§a§ltesttesttest"},{"text":"§r§a§ktest"}]}
+execute @e[tag=select,scores={actNum=1}] ~ ~ ~ execute @s[tag=!randomSelected] ~ ~ ~ scoreboard players random @e[tag=select] random 1 11
+execute @a[lm=30] ~ ~ ~ scoreboard players add @s test987j9uq34 -14
+execute @a[lm=30] ~ ~ ~ scoreboard players remove @s test987j9uq34 -14
+scoreboard players remove @s test987j9uq34 -14
+scoreboard objectives add example1231 dummy "これはexampleかもしれない"
+scoreboard objectives add jioagjk dummy
+scoreboard players add test example1231 1
+scoreboard objectives remove test987j9uq34
+tag @a remove test73482b3r2
+scoreboard objectives add test987j9uq34 dummy
+scoreboard players random @e[tag=select] random 0 10
+summon armor_stand -48 248 -122
+execute @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,m=a] ~ ~ ~ detect ~ ~-1 ~ tnt 0 tp @s ~ ~-1 ~
+execute @a[x=-30,y=4,z=-119,dx=50,dy=1000,dz=44,m=a] ~ ~ ~ detect ~ ~-1 ~ redstone_block 0 tp @s ~ ~-1 ~
+spreadplayers -4.5 -99.5 0 25 @e[tag=sbp,scores={sp=1}]
+execute @e[tag=select,scores={sn=1015},type=armor_stand] ~ ~ ~ scoreboard players add @s bp_time 0
+effect @a[lm=10] saturation 1 255 true
+execute @a[lm=30] ~ ~ ~ effect @e resistance 0 0
+effect @e resistance 0 0
+effect @e instant_health 0
+scoreboard players operation @s test987j9uq34 += @s test987j9uq34
+execute @a ~ ~ ~ scoreboard players operation @s test987j9uq34 += @a[lm=40] test987j9uq34
+execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ effect @e[tag=clear] invisibility 0 0 true
+scoreboard players operation @a[l=60,lm=40,name="な は"] test987j9uq34 += @a[lm=40,r=5] test987j9uq34
+execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ tag * remove testmode
+execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ gamemode a @a[m=s]
+execute @e[tag=select,scores={cl=1..1000}] ~ ~ ~ gamerule sendcommandfeedback false
+scoreboard objectives add test987j9uq34 dummy "§aこれはテスト ディスプレイです"
+execute @e[tag=clear] ~ ~ ~ fill ~50 ~ ~50 ~ ~ ~ air 0 replace white_glazed_terracotta
