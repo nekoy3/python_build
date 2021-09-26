@@ -32,7 +32,11 @@ while True:
     what = ''
     ansCnt = 0
     for i in range(random.randint(0,20)):
-        line[(i%4)+1],line[(i%3)+1] = line[(i%3)+1],line[(i%4)+1]
+        try:
+            line[(i%4)+1],line[(i%3)+1] = line[(i%3)+1],line[(i%4)+1]
+        except:
+            print(str(useLine) + '行の問題の記述方式に誤りがあります。')
+            continue
     for i in range(4):
         try:
             line[i+1].index('*')
