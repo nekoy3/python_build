@@ -26,6 +26,24 @@ for i in range(len(beforeText)):
     beforeText[i] = beforeText[i].replace('\n','')
 qSuc = qCnt = 0
 
+#記述方法に何かしらのミスがないか一度全走査してチェックする
+cnt = 0
+checkErr = False
+for j in beforeText:
+    cnt += 1
+    checkLine = j.rstrip().split(' ')
+    for i in range(random.randint(0,20)):
+        try:
+            checkLine[(i%4)+1],checkLine[(i%3)+1] = checkLine[(i%3)+1],checkLine[(i%4)+1]
+        except IndexError:
+            print(str(cnt) + '行の問題の記述方式に誤りがあります。選択肢が少ないか、空白を認識していない可能性があります。')
+            checkErr = True
+            break
+if checkErr:
+    exit()
+else:
+    print("問題文の記述形式に問題はありませんでした。出題を開始します。")
+
 while True:
     useLine = random.randint(0, len(beforeText)-1)
     line = beforeText[useLine].rstrip().split(' ')
