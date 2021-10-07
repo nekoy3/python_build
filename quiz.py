@@ -36,10 +36,12 @@ for j in beforeText:
         try:
             checkLine[(i%4)+1],checkLine[(i%3)+1] = checkLine[(i%3)+1],checkLine[(i%4)+1]
         except IndexError:
-            print(str(cnt) + '行の問題の記述方式に誤りがあります。選択肢が少ないか、空白を認識していない可能性があります。')
+            print(str(cnt) + '行の問題の記述方式に誤りがあります。選択肢が少ないか、空白を認識していない可能性')
             checkErr = True
             break
 if checkErr:
+    print("続けるには何かキーを入力してください・・・")
+    input()
     exit()
 else:
     print("問題文の記述形式に問題はありませんでした。出題を開始します。")
