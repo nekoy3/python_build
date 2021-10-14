@@ -12,6 +12,26 @@ import re
 
 sg.theme('DarkGreen7')   # デザインテーマの設定
 
+srcPath = './burden.txt'
+if os.path.exists(srcPath):
+    print("ファイル認識",os.path.abspath(srcPath))
+else:
+    make_layout = [  [sg.Text('ファイルが存在しないため、\n同じ階層に記録用ファイルを作成します。')],
+                     [sg.Button('OK'), sg.Button('中止')] ]
+    mkfilewindow = sg.Window('ファイルを新規作成', make_layout)
+    while True:
+        event, values = mkfilewindow.read()
+
+        if event == "OK":
+            mkfilewindow.close()
+            f = open(srcPath, 'w')
+            f.write('')
+            f.close()
+            break
+        elif event == sg.WIN_CLOSED or event == "中止":
+            exit()
+
+
 layout = [  [sg.Text('大学からのburdenを管理します。')],
             [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '存在しない（追加ミス）課題を玉砕する', '完了フラグを付ける'), default_value="課題を追加する",size=(35, 1), key='cmd')],
             [sg.Text('※時間指定について 時間指定(24h)は出来ますが、分、秒単位は無視されます。')],
@@ -103,6 +123,7 @@ def data_select():
         [sg.Text("課題を検索します。")],
         [sg.Text('操作', size=(3, 1)),sg.Combo(('期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="期限が迫っている未完了の課題を表示する",size=(35, 1), key='cmd')],
         [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(20, 1))],
+        [sg.Output(size=(50,10), key='-OUTPUT-')],
         [sg.Button("検索", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
     
     main_window = sg.Window("課題を追加する", main_layout)
@@ -115,41 +136,75 @@ def data_select():
             break
 
         elif event == "検索":
+
+            main_window['-OUTPUT-'].update('')
+
             with open('./burden.txt') as f:
                 allData = list(f)
+
             for i in range(len(allData)):
                 allData[i] = allData[i].split('//')
                 allData[i][3] = datetime.datetime.strptime(allData[i][3], '%Y-%m-%d %H:%M:%W')
-            
-            list_layout = [sg.Text("課題を表示します。")]
+
+            dt_now = datetime.datetime.now()
 
             if values['cmd'] == '期限が迫っている未完了の課題を表示する':
-                dt_now = datetime.datetime.now()
-                list_layout.append(sg.Text("この課題は " + str(dt_now) + "以降の課題です。"))
+                for data in allData:
+                    if dt_now <= data[3]:
+                        condition = "未完了" if data[4] == "uncompleted\n" else "完了"
+                        print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
 
-                for i in range(len(allData)):
-                    if dt_now <= allData[i][3]:
-                        condition = "未完了" if allData[i][4] == "uncompleted" else "完了"
-                        #list_layout.append
-                        print("NUM:" + allData[i][0] + " 科目名:" + allData[i][1] + " 内容:" + allData[i][2] + " 提出期限:" + str(allData[i][3]) + " 状態:" + condition)
-                
-            # elif values['cmd'] == '期限過ぎているのも含め未完了の課題を表示する':
-            # elif values["cmd"] == '期限がまだあるが、完了した課題を見て悦に浸る':
-            # elif values["cmd"] == '期限が過ぎた、絶望の課題'
-            # elif values["cmd"] == '指定日時以降が期限の課題'
+            elif values['cmd'] == '期限過ぎているのも含め未完了の課題を表示する':
+                for data in allData:
+                    if data[4] == "uncompleted\n":
+                        condition = "未完了"
+                        print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
 
-            list_layout.append(sg.Button("OK", size=(10, 1)))
-            result_window = sg.Window('課題の表示', list_layout)
-            while True:
-                event, values = result_window.read()
+            elif values["cmd"] == '期限がまだあるが、完了した課題を見て悦に浸る':
+                for data in allData:
+                    if dt_now <= data[3] and data[4] == "completed\n":
+                        print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
 
-                if event == sg.WIN_CLOSED or event == "OK":
-                    result_window.close()
-                    break
+            elif values["cmd"] == '期限が過ぎた、絶望の課題':
+                for data in allData:
+                    if dt_now >= data[3] and data[4] == "uncompleted\n":
+                        print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
 
+            elif values["cmd"] == '指定日時以降が期限の課題':
+                try: 
+                    set_dt = datetime.datetime.strptime(values['kigen'], '%Y-%m-%d %H:%M:%W')
+                except:
+                    print("エラー：時刻指定が正しくありません。")
+                    continue
+                for data in allData:
+                    if set_dt <= data[3]:
+                        condition = "未完了" if data[4] == "uncompleted\n" else "完了"
+                        print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
 
 def data_remove():
-    exit()
+    main_layout = [
+        [sg.Text("課題を削除します。")],
+        [sg.Text("検索して表示された番号を指定して実行し削除してください。"),sg.Input(key='removeNum',size=(5, 1))],
+        [sg.Output(size=(50, 1), key='-OUTPUT-')],
+        [sg.Button("削除", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
+    
+    main_window = sg.Window("課題を削除する", main_layout)
+
+    while True:
+        event, values = main_window.read()
+
+        if event == sg.WIN_CLOSED or event == "キャンセル":
+            main_window.close()
+            break
+
+        elif event == "削除":
+            with open('./burden.txt') as f:
+                allData = list(f)
+            for i in range(len(allData)):
+                allData[i] = allData[i].split('//')[0]
+            #ここで番号が入力値と適合した行を#REMOVED!に置き換える。行数を減らすと番号振り当て時に不都合が発生する。
+            #with openでデータを格納する処理を関数化して、その際#REMOVED!に対する処理を含めるといいかも
+
 def data_changeflag():
     exit()
 
