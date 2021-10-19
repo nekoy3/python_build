@@ -28,7 +28,7 @@ else:
             f.write('')
             f.close()
             break
-        elif event == sg.WIN_CLOSED or event == "中止":
+        elif event in (sg.WIN_CLOSED,"中止"):
             exit()
 
 
@@ -60,7 +60,7 @@ def data_add():
     while True:
         event, values = main_window.read()
 
-        if event == sg.WIN_CLOSED or event == "キャンセル":
+        if event in (sg.WIN_CLOSED,"キャンセル"):
             main_window.close()
             break
 
@@ -131,7 +131,7 @@ def data_select():
     while True:
         event, values = main_window.read()
 
-        if event == sg.WIN_CLOSED or event == "キャンセル":
+        if event in (sg.WIN_CLOSED, "キャンセル"):
             main_window.close()
             break
 
@@ -193,17 +193,28 @@ def data_remove():
     while True:
         event, values = main_window.read()
 
-        if event == sg.WIN_CLOSED or event == "キャンセル":
+        if event in (sg.WIN_CLOSED, "キャンセル"):
             main_window.close()
             break
 
         elif event == "削除":
             with open('./burden.txt') as f:
                 allData = list(f)
+            main_window['-OUTPUT-'].update('')
             for i in range(len(allData)):
-                allData[i] = allData[i].split('//')[0]
+                burNum = allData[i].split('//')[0]
+                if burNum == values['removeNum']:
+                    print(allData[i] + "削除しました。")
+                    allData[i] = "#REMOVED!!"
+                    allDataStr = ""
+                    with open('./burden.txt', mode='w') as f:
+                        for i in allData:
+                            allDataStr += i
+                        f.write(allDataStr)
+                    break
+            else:
+                print("入力値が正しくありません。")
             #ここで番号が入力値と適合した行を#REMOVED!に置き換える。行数を減らすと番号振り当て時に不都合が発生する。
-            #with openでデータを格納する処理を関数化して、その際#REMOVED!に対する処理を含めるといいかも
 
 def data_changeflag():
     exit()
@@ -211,7 +222,7 @@ def data_changeflag():
 while True:
     event, values = window.read()
 
-    if event == sg.WIN_CLOSED or event == '終了':
+    if event in (sg.WIN_CLOSED, '終了'):
         break
 
     elif event == 'OK':
