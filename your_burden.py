@@ -113,18 +113,18 @@ def data_add():
 
                     if values1['check'] == False:
                         main_window['subject']('')
-                    main_window['subjectInfo']('')
-                    main_window['kigen']('')
-                    break
+                        main_window['subjectInfo']('')
+                        main_window['kigen']('')
+                        break
    
 
 def data_select():
 
     main_layout = [
         [sg.Text("課題を検索します。")],
-        [sg.Text('操作', size=(3, 1)),sg.Combo(('期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="期限が迫っている未完了の課題を表示する",size=(35, 1), key='cmd')],
+        [sg.Text('操作', size=(5, 1)),sg.Combo(('期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="期限が迫っている未完了の課題を表示する",size=(35, 1), key='cmd')],
         [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(20, 1))],
-        #[sg.Output(size=(50,10), key='-OUTPUT-')],
+        [sg.Output(size=(50,10), key='-OUTPUT-')],
         [sg.Button("検索", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
     
     main_window = sg.Window("課題を追加する", main_layout)
@@ -144,7 +144,6 @@ def data_select():
 
             for i in range(len(file)):
                 file[i] = file[i].split('//')
-                print(file)
                 file[i][3] = datetime.datetime.strptime(file[i][3], '%Y-%m-%d %H:%M:%W')
 
             dt_now = datetime.datetime.now()
@@ -154,6 +153,8 @@ def data_select():
                     if dt_now <= data[3]:
                         condition = "未完了" if data[4] == "uncompleted\n" else "完了"
                         print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
+                else:
+                    print("該当データがありません。")
 
             elif values['cmd'] == '期限過ぎているのも含め未完了の課題を表示する':
                 for data in file:
@@ -218,6 +219,7 @@ def data_remove():
 def data_changeflag():
     exit()
 
+#一括で課題を追加する項目と、一週間分の課題を表示する機能を追加
 while True:
     event, values = window.read()
 
