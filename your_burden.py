@@ -122,7 +122,7 @@ def data_select():
 
     main_layout = [
         [sg.Text("課題を検索します。")],
-        [sg.Text('操作', size=(5, 1)),sg.Combo(('期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="期限が迫っている未完了の課題を表示する",size=(35, 1), key='cmd')],
+        [sg.Text('操作', size=(10, 1)),sg.Combo(('期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="期限が迫っている未完了の課題を表示する",size=(55, 1), key='cmd')],
         [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(20, 1))],
         [sg.Output(size=(50,10), key='-OUTPUT-')],
         [sg.Button("検索", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
@@ -147,30 +147,32 @@ def data_select():
                 file[i][3] = datetime.datetime.strptime(file[i][3], '%Y-%m-%d %H:%M:%W')
 
             dt_now = datetime.datetime.now()
-
+            failFlag = True
             if values['cmd'] == '期限が迫っている未完了の課題を表示する':
                 for data in file:
                     if dt_now <= data[3]:
                         condition = "未完了" if data[4] == "uncompleted\n" else "完了"
                         print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
-                else:
-                    print("該当データがありません。")
+                        failFlag = False
 
             elif values['cmd'] == '期限過ぎているのも含め未完了の課題を表示する':
                 for data in file:
                     if data[4] == "uncompleted\n":
                         condition = "未完了"
                         print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
+                        failFlag = False
 
             elif values["cmd"] == '期限がまだあるが、完了した課題を見て悦に浸る':
                 for data in file:
                     if dt_now <= data[3] and data[4] == "completed\n":
                         print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
+                        failFlag = False
 
             elif values["cmd"] == '期限が過ぎた、絶望の課題':
                 for data in file:
                     if dt_now >= data[3] and data[4] == "uncompleted\n":
                         print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
+                        failFlag = False
 
             elif values["cmd"] == '指定日時以降が期限の課題':
                 try: 
@@ -182,6 +184,10 @@ def data_select():
                     if set_dt <= data[3]:
                         condition = "未完了" if data[4] == "uncompleted\n" else "完了"
                         print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
+                        failFlag = False
+
+            if failFlag:
+                print("該当データがありません。")
 
 def data_remove():
     main_layout = [
@@ -208,7 +214,7 @@ def data_remove():
                     print(file[i] + "削除しました。")
                     file[i] = "#REMOVED!!\n"
                     fileStr = ""
-                    for i in file:
+                    for j in file:
                         fileStr += i
                     with open('./burden.txt', mode='w') as f:
                         f.write(fileStr)
@@ -217,7 +223,38 @@ def data_remove():
                 print("入力値が正しくありません。")
 
 def data_changeflag():
-    exit()
+    main_layout = [
+        [sg.Text("課題のフラグを変更します。（未完了→完了、完了→未完了）")],
+        [sg.Text("検索して表示された番号を指定して実行し削除してください。"),sg.Input(key='flagNum',size=(5, 1))],
+        #[sg.Output(size=(50, 1), key='-OUTPUT-')],
+        [sg.Button("変更", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
+    
+    main_window = sg.Window("課題のフラグを変更する", main_layout)
+
+    while True:
+        event, values = main_window.read()
+
+        if event in (sg.WIN_CLOSED, "キャンセル"):
+            main_window.close()
+            break
+
+        elif event == "変更":
+            file = readFile()
+            #main_window['-OUTPUT-'].update('')
+            for i in range(len(file)):
+                data = file[i].split('//')
+                if data[0] == values['flagNum']:
+                    data[4] = "uncompleted\n" if data[4] == "completed\n" else "completed\n"
+                    file[i] = [data[j] + "//" for j in range(4)] + data[4]
+                    fileStr = ""
+                    break
+            else:
+                print("入力値が正しくありません。")
+            for j in file:
+                fileStr += j
+            with open('./burden.txt', mode='w') as f:
+                f.write(fileStr)
+            break
 
 #一括で課題を追加する項目と、一週間分の課題を表示する機能を追加
 while True:
