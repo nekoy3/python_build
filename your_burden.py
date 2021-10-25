@@ -29,8 +29,9 @@ else:
 
 layout = [  [sg.Text('大学からのburdenを管理します。')],
             [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '存在しない（追加ミス）課題を玉砕する', '完了フラグを付ける', '課題を一括で追加する'), default_value="課題を追加する",size=(35, 1), key='cmd')],
-            [sg.Text('※時間指定について 時間指定(24h)は出来ますが、分、秒単位は無視されます。')],
-            [sg.Input(key='-Input-'), sg.CalendarButton('calender', target='-Input-')],
+            #[sg.Text('※時間指定について 時間指定(24h)は出来ますが、分、秒単位は無視されます。')],
+            #[sg.Input(key='-Input-'), sg.CalendarButton('calender', target='-Input-')],
+            [sg.Button('使い方を表示する', size=(30, 1))],
             [sg.Button('OK'), sg.Button('終了')] ]
 
 window = sg.Window('your_burden', layout)
@@ -50,11 +51,32 @@ def readFile():
         data.pop(i)
     return data
 
+def how_to_help():
+    main_layout = [
+        [sg.Text("このプログラムは、課題を一括で管理し効率化を図ったプログラムです。")],
+        [sg.Text("課題を登録したいとき「課題を追加」、課題を一括で登録したいとき「課題を一括で追加")],
+        [sg.Text("課題の完了を登録したいとき「完了フラグを付ける」、課題を閲覧する時「現実を見る」")],
+        [sg.Text("課題を間違えて追加してしまった場合は「存在しない課題を玉砕する」")],
+        [sg.Text("という操作のみです。分からない事があれば製作者(猫山さん。)に聞いてください。")],
+        [sg.Text("")],
+        [sg.Text("データは C\\Users\\ﾕｰｻﾞｰ名\\burden.txt に配置しています。今後編集機能を実装するかもしれませんが、")],
+        [sg.Text("微調整はテキストファイルを触ったほうが行いやすいかもしれません。難読化は行っておりません。")],
+        [sg.Button("OK", size=(10, 1))]]
+
+    main_window = sg.Window("使い方の説明", main_layout)
+
+    while True:
+        event, values = main_window.read()
+        if event in (sg.WIN_CLOSED,"OK"):
+            main_window.close()
+            break
+    return None
 
 def data_add_bulk():
 
     main_layout = [
         [sg.Text("課題を一括で追加します。")],
+        [sg.Text("講義の初回と最終回、科目名、提出期限（時間まで指定可能）、詳細（内容や提出先）を記述し一括にその科目最終回までの課題を登録します。")],
         [sg.Text("科目名"),sg.Input(key='subject',size=(10, 1)),sg.Text("課題内容"),sg.Input(key='subjectInfo',size=(35, 1))],
         [sg.Text("提出期限(回を重ねるたび7の倍数日に登録)(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(35, 1))],
         [sg.Text("最初の提出時の回"),sg.Input(key='start',size=(10, 1)),sg.Text("最後の提出回"),sg.Input(key='end',size=(10, 1))],
@@ -147,6 +169,7 @@ def data_add():
 
     main_layout = [
         [sg.Text("課題を追加します。")],
+        [sg.Text("科目名、提出期限（時間まで指定可能）、詳細（内容や提出先）を記述し課題を登録します。")],
         [sg.Text("科目名"),sg.Input(key='subject',size=(10, 1)),sg.Text("課題内容"),sg.Input(key='subjectInfo',size=(35, 1))],
         [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(35, 1))],
         [sg.Button("追加", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
@@ -242,6 +265,13 @@ def data_select():
             dt_now = datetime.datetime.now()
             failFlag = True
             if values['cmd'] == '今後一週間内での課題を表示する(未完了のみ)':
+                for data in file:
+                    if dt_now <= data[3] and (dt_now + datetime.timedelta(days=7)) >= data[3] and data[4] == "uncompleted\n":
+                        condition = "未完了"
+                        print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
+                        failFlag = False
+
+            if values['cmd'] == '今後一週間内での課題を表示する(全て)':
                 for data in file:
                     if dt_now <= data[3] and (dt_now + datetime.timedelta(days=7)) >= data[3]:
                         condition = "未完了" if data[4] == "uncompleted\n" else "完了"
@@ -372,7 +402,9 @@ while True:
 
     if event in (sg.WIN_CLOSED, '終了'):
         break
-
+    elif event == "使い方を表示する":
+        window.Hide()
+        main_return = how_to_help()
     elif event == 'OK':
         window.Hide()
             
