@@ -28,7 +28,7 @@ else:
 
 
 layout = [  [sg.Text('大学からのburdenを管理します。')],
-            [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '存在しない（追加ミス）課題を玉砕する', '完了フラグを付ける'), default_value="課題を追加する",size=(35, 1), key='cmd')],
+            [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '存在しない（追加ミス）課題を玉砕する', '完了フラグを付ける', '課題を一括で追加する'), default_value="課題を追加する",size=(35, 1), key='cmd')],
             [sg.Text('※時間指定について 時間指定(24h)は出来ますが、分、秒単位は無視されます。')],
             [sg.Input(key='-Input-'), sg.CalendarButton('calender', target='-Input-')],
             [sg.Button('OK'), sg.Button('終了')] ]
@@ -49,6 +49,99 @@ def readFile():
     for i in list(reversed(delList)):
         data.pop(i)
     return data
+
+
+def data_add_bulk():
+
+    main_layout = [
+        [sg.Text("課題を一括で追加します。")],
+        [sg.Text("科目名"),sg.Input(key='subject',size=(10, 1)),sg.Text("課題内容"),sg.Input(key='subjectInfo',size=(35, 1))],
+        [sg.Text("提出期限(回を重ねるたび7の倍数日に登録)(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(35, 1))],
+        [sg.Text("最初の提出時の回"),sg.Input(key='start',size=(10, 1)),sg.Text("最後の提出回"),sg.Input(key='end',size=(10, 1))],
+        [sg.Text("最初の提出時の回には次回の講義分の課題（例：第七回なら「7」）、最後は最終回の値(例：14回講義で第十四回が期末試験で課題がない場合は「13」)と入力")],
+        [sg.Button("追加", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
+
+    main_window = sg.Window("課題を追加する", main_layout)
+
+    while True:
+        event, values = main_window.read()
+
+        if event in (sg.WIN_CLOSED,"キャンセル"):
+            main_window.close()
+            break
+
+        elif event == "追加":
+            start = int(values['start'])
+            end = int(values['end'])
+
+            if values['subject'] == "" or values['subjectInfo'] == "" or values['kigen'] == "" or start == "" or end == "":
+                error_layout = [
+                    [sg.Text("空白欄が存在します。")],
+                    [sg.Button("OK", size=(10, 1))]]
+                error_window = sg.Window("error", error_layout)
+
+                while True:
+                    event, values = error_window.read()
+                    if event in (sg.WIN_CLOSED, "OK"):
+                        error_window.close()
+                        break
+                continue
+
+            if start >= end or start < 1 or end > 14:
+                error_layout = [
+                    [sg.Text("値が不正です。")],
+                    [sg.Button("OK", size=(10, 1))]]
+                error_window = sg.Window('error', error_layout)
+
+                while True:
+                    event1, values1 = error_window.read()
+                    if event1 in (sg.WIN_CLOSED, "OK"):
+                        error_window.close()
+                        break
+                continue
+
+            try:
+                with open('./burden.txt') as f:
+                    totalLine = sum(1 for line in f)
+            except:
+                totalLine = 0
+            
+            strDate = values['kigen'][:-5] + '00:00'
+            bulkDate = datetime.datetime.strptime(strDate, '%Y-%m-%d %H:%M:%W')
+            bulkList = []
+            for i in range(start,end+1):
+                bulkList.append([bulkDate.strftime('%Y-%m-%d %H:%M:%S'), i])
+                bulkDate = bulkDate + datetime.timedelta(days=7)
+            
+            for bLine in bulkList:
+                data = str(totalLine) + "//" + values['subject'] + "//[第" + str(bLine[1]) + "]" + values['subjectInfo'].replace("//","/") + "//" + bLine[0] + "//uncompleted"
+                writeline_file(data)
+                totalLine += 1
+
+            confirm_layout = [
+                [sg.Text("課題を追加しました。続けて追加しますか？")],
+                [sg.Button("追加", size=(10, 1)),sg.Button("追加せず、終了", size=(18, 1))]]
+
+            confirm_window = sg.Window('confirm', confirm_layout)
+
+            while True:
+                event1, values1 = confirm_window.read()
+
+                if event1 in (sg.WIN_CLOSED, "追加せず、終了"):
+                    confirm_window.close()
+                    main_window.close()
+                    return None
+
+                elif event1 == "追加":
+                    confirm_window.close()
+                    main_window.UnHide()
+
+                    if values1['check'] == False:
+                        main_window['subject']('')
+                        main_window['subjectInfo']('')
+                        main_window['kigen']('')
+                        break
+
 
 def data_add():
 
@@ -116,7 +209,7 @@ def data_add():
                         main_window['subjectInfo']('')
                         main_window['kigen']('')
                         break
-   
+
 
 def data_select():
 
@@ -127,7 +220,7 @@ def data_select():
         [sg.Output(size=(50,10), key='-OUTPUT-')],
         [sg.Button("検索", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
     
-    main_window = sg.Window("課題を追加する", main_layout)
+    main_window = sg.Window("課題を検索する", main_layout)
 
     while True:
         event, values = main_window.read()
@@ -251,7 +344,8 @@ def data_changeflag():
                     for j in data:
                         file[i] += j + "//"
                     file[i] = file[i][:-2]
-                    print(str(data[0]) + "番のデータ(" + data[1] + ")のフラグを" + ["未完了" if data[4] == "uncompleted\n" else "完了"] + "に変更しました。")
+                    condition = str(["未完了" if data[4] == "uncompleted\n" else "完了"])
+                    print(str(data[0]) + "番のデータ(" + str(data[1]) + ")のフラグを" + condition + "に変更しました。")
                     failFlag = False
                     break
                 
@@ -264,7 +358,6 @@ def data_changeflag():
                 fileStr += j
             with open('./burden.txt', mode='w') as f:
                 f.write(fileStr)
-            break
 
 #一括で課題を追加する項目と、一週間分の課題を表示する機能を追加
 while True:
@@ -278,6 +371,8 @@ while True:
             
         if values['cmd'] == '課題を追加する':
             main_return = data_add()
+        if values['cmd'] == '課題を一括で追加する':
+            main_return = data_add_bulk()
         elif values['cmd'] == '現実を見る（課題を閲覧する）':
             main_return = data_select()
         elif values['cmd'] == '存在しない（追加ミス）課題を玉砕する':
