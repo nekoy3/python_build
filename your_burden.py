@@ -226,7 +226,7 @@ def data_changeflag():
     main_layout = [
         [sg.Text("課題のフラグを変更します。（未完了→完了、完了→未完了）")],
         [sg.Text("検索して表示された番号を指定して実行し削除してください。"),sg.Input(key='flagNum',size=(5, 1))],
-        #[sg.Output(size=(50, 1), key='-OUTPUT-')],
+        [sg.Output(size=(50, 1), key='-OUTPUT-')],
         [sg.Button("変更", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
     
     main_window = sg.Window("課題のフラグを変更する", main_layout)
@@ -240,16 +240,26 @@ def data_changeflag():
 
         elif event == "変更":
             file = readFile()
-            #main_window['-OUTPUT-'].update('')
+            main_window['-OUTPUT-'].update('')
+            failFlag = True
+
             for i in range(len(file)):
                 data = file[i].split('//')
                 if data[0] == values['flagNum']:
                     data[4] = "uncompleted\n" if data[4] == "completed\n" else "completed\n"
-                    file[i] = [data[j] + "//" for j in range(4)] + data[4]
-                    fileStr = ""
+                    file[i] = ""
+                    for j in data:
+                        file[i] += j + "//"
+                    file[i] = file[i][:-2]
+                    print(str(data[0]) + "番のデータ(" + data[1] + ")のフラグを" + ["未完了" if data[4] == "uncompleted\n" else "完了"] + "に変更しました。")
+                    failFlag = False
                     break
-            else:
+                
+            if failFlag:
                 print("入力値が正しくありません。")
+                break
+
+            fileStr = ""
             for j in file:
                 fileStr += j
             with open('./burden.txt', mode='w') as f:
