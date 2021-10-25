@@ -3,7 +3,6 @@
 import datetime
 import PySimpleGUI as sg
 import os
-import re
 
 sg.theme('DarkGreen7')   # デザインテーマの設定
 
