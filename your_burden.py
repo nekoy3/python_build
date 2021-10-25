@@ -215,7 +215,7 @@ def data_select():
 
     main_layout = [
         [sg.Text("課題を検索します。")],
-        [sg.Text('操作', size=(10, 1)),sg.Combo(('期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="期限が迫っている未完了の課題を表示する",size=(55, 1), key='cmd')],
+        [sg.Text('操作', size=(10, 1)),sg.Combo(('今後一週間内での課題を表示する(未完了のみ)','今後一週間内での課題を表示する(全て)','期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="今後一週間内での課題を表示する(未完了のみ)",size=(55, 1), key='cmd')],
         [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(20, 1))],
         [sg.Output(size=(50,10), key='-OUTPUT-')],
         [sg.Button("検索", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
@@ -241,6 +241,13 @@ def data_select():
 
             dt_now = datetime.datetime.now()
             failFlag = True
+            if values['cmd'] == '今後一週間内での課題を表示する(未完了のみ)':
+                for data in file:
+                    if dt_now <= data[3] and (dt_now + datetime.timedelta(days=7)) >= data[3]:
+                        condition = "未完了" if data[4] == "uncompleted\n" else "完了"
+                        print("-----------------\nNUM:" + data[0] + "\n科目名:" + data[1] + "\n内容:" + data[2] + "\n提出期限:" + str(data[3]) + "\n状態:" + condition)
+                        failFlag = False
+
             if values['cmd'] == '期限が迫っている未完了の課題を表示する':
                 for data in file:
                     if dt_now <= data[3]:
