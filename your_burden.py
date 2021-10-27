@@ -3,44 +3,77 @@
 import datetime
 import PySimpleGUI as sg
 import os
+from sys import exit
+import shutil
 
 sg.theme('DarkGreen7')   # デザインテーマの設定
 
-srcPath = './burden.txt'
+fname = '~/burden.txt'
+srcPath = os.path.expanduser(fname)
+
 if os.path.exists(srcPath):
     print("ファイル認識",os.path.abspath(srcPath))
 else:
     make_layout = [  [sg.Text('ファイルが存在しないため、\n同じ階層に記録用ファイルを作成します。')],
-                     [sg.Button('OK'), sg.Button('中止')] ]
+                     [sg.Button('OK'), sg.Button('中止'), sg.Button('過去に作ったファイルを引き継ぐ')] ]
     mkfilewindow = sg.Window('ファイルを新規作成', make_layout)
     while True:
         event, values = mkfilewindow.read()
 
         if event == "OK":
             mkfilewindow.close()
-            f = open(srcPath, 'w')
-            f.write('')
-            f.close()
+            with open(srcPath, 'w') as f:
+                f.write('')
             break
+
         elif event in (sg.WIN_CLOSED,"中止"):
             exit()
+        
+        elif event == "過去に作ったファイルを引き継ぐ":
+            repair_window_layout = [  [sg.Text('バージョンアップに伴い、データ保存位置が変更されました。')],
+                                      [sg.Text('OKを押すことで、ファイル位置をホームディレクトリ直下に移動しプログラムを継続します。')],
+                                      [sg.Button('OK'), sg.Button('キャンセル')] ]
+            mkfilewindow.Hide()
+            repairwindow = sg.Window('ファイルを引き継ぐ', repair_window_layout)
+            while True:
+                event, values = repairwindow.read()
 
+                if event == "OK":
+                    repairwindow.close()
+                    mkfilewindow.UnHide()
+                    try:
+                        shutil.move('./burden.txt', srcPath)
+                    except:
+                        error_layout = [
+                            [sg.Text("ファイルの移動に失敗しました。")],
+                            [], #エラー内容出力
+                            [sg.Button("OK", size=(10, 1))]]
+                        error_window = sg.Window('error', error_layout)
+
+                        while True:
+                            event1, values1 = error_window.read()
+                            if event1 in (sg.WIN_CLOSED, "OK"):
+                                error_window.close()
+                                break
+                    break
+
+                elif event in (sg.WIN_CLOSED,"キャンセル"):
+                    repairwindow.close()
+                    mkfilewindow.UnHide()
 
 layout = [  [sg.Text('大学からのburdenを管理します。')],
             [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '存在しない（追加ミス）課題を玉砕する', '完了フラグを付ける', '課題を一括で追加する'), default_value="課題を追加する",size=(35, 1), key='cmd')],
-            #[sg.Text('※時間指定について 時間指定(24h)は出来ますが、分、秒単位は無視されます。')],
-            #[sg.Input(key='-Input-'), sg.CalendarButton('calender', target='-Input-')],
             [sg.Button('使い方を表示する', size=(30, 1))],
             [sg.Button('OK'), sg.Button('終了')] ]
 
 window = sg.Window('your_burden', layout)
 
 def writeline_file(text):
-    with open('./burden.txt', 'a', encoding='UTF-8') as f:
+    with open(srcPath, 'a', encoding='UTF-8') as f:
         f.write(text + "\n")
 
 def readFile():
-    with open('./burden.txt', 'r', encoding='UTF-8') as f:
+    with open(srcPath, 'r', encoding='UTF-8') as f:
         data = list(f)
     delList = []
     for i in range(len(data)):
@@ -122,7 +155,7 @@ def data_add_bulk():
                 continue
 
             try:
-                with open('./burden.txt') as f:
+                with open(srcPath) as f:
                     totalLine = sum(1 for line in f)
             except:
                 totalLine = 0
@@ -184,7 +217,7 @@ def data_add():
 
         elif event == "追加":
             try:
-                with open('./burden.txt') as f:
+                with open(srcPath) as f:
                     totalLine = sum(1 for line in f)
             except:
                 totalLine = 0
@@ -345,7 +378,7 @@ def data_remove():
                     fileStr = ""
                     for j in file:
                         fileStr += i
-                    with open('./burden.txt', mode='w') as f:
+                    with open(srcPath, mode='w') as f:
                         f.write(fileStr)
                     break
             else:
@@ -392,7 +425,7 @@ def data_changeflag():
             fileStr = ""
             for j in file:
                 fileStr += j
-            with open('./burden.txt', mode='w') as f:
+            with open(srcPath, mode='w') as f:
                 f.write(fileStr)
 
 #一括で課題を追加する項目と、一週間分の課題を表示する機能を追加
