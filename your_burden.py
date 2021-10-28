@@ -1,15 +1,18 @@
 # coding: utf_8
 #操作ファイルはburden.txtファイル固定にアクセスするものとする。無ければ生成し通知する。
 import datetime
+from tkinter.constants import E
 import PySimpleGUI as sg
 import os
 from sys import exit
 import shutil
+import codecs
 
 sg.theme('DarkGreen7')   # デザインテーマの設定
 
 fname = '~/burden.txt'
 srcPath = os.path.expanduser(fname)
+flag = False
 
 if os.path.exists(srcPath):
     print("ファイル認識",os.path.abspath(srcPath))
@@ -40,13 +43,12 @@ else:
 
                 if event == "OK":
                     repairwindow.close()
-                    mkfilewindow.UnHide()
                     try:
-                        shutil.move('./burden.txt', srcPath)
-                    except:
+                        shutil.copy('./burden.txt', os.path.dirname(srcPath))
+                    except FileNotFoundError:
                         error_layout = [
                             [sg.Text("ファイルの移動に失敗しました。")],
-                            [], #エラー内容出力
+                            [sg.Text("このアプリと同じ階層にburden.txtが存在しません。")],
                             [sg.Button("OK", size=(10, 1))]]
                         error_window = sg.Window('error', error_layout)
 
@@ -54,23 +56,54 @@ else:
                             event1, values1 = error_window.read()
                             if event1 in (sg.WIN_CLOSED, "OK"):
                                 error_window.close()
+                                mkfilewindow.UnHide()
                                 break
-                    break
+                    else:
+                        if os.path.exists(srcPath):
+                            success_layout  = [
+                                [sg.Text("ファイルの移動に成功しました。")],
+                                [sg.Button("OK", size=(10, 1))]]
+                            success_window = sg.Window('success', success_layout)
+                            os.remove('./burden.txt')
+
+                            while True:
+                                event1, values1 = success_window.read()
+                                if event1 in (sg.WIN_CLOSED, "OK"):
+                                    success_window.close()
+                                    flag = True
+                                    break
+                        else:
+                            error_layout = [
+                                [sg.Text("ファイルの移動に失敗しました。")],
+                                [sg.Text("ファイルは存在しますが何かしらの問題が発生しました。このエラーが発生した場合は作成者に連絡してください。")],
+                                [sg.Text("os.path.exists(srcPath)=" + os.path.exists(srcPath) + " os.path.exists(./burden.txt)=" + os.path.exists('./burden.txt'))],
+                                [sg.Button("OK", size=(10, 1))]]
+                            error_window = sg.Window('error', error_layout)
+
+                            while True:
+                                event1, values1 = error_window.read()
+                                if event1 in (sg.WIN_CLOSED, "OK"):
+                                    error_window.close()
+                                    exit()
 
                 elif event in (sg.WIN_CLOSED,"キャンセル"):
                     repairwindow.close()
                     mkfilewindow.UnHide()
+                    break
+                if flag:
+                    break
+            if flag:
+                break   #<--メソッド化してreturnすれば省略できるので後々対応
 
-layout = [  [sg.Text('大学からのburdenを管理します。')],
-            [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '存在しない（追加ミス）課題を玉砕する', '完了フラグを付ける', '課題を一括で追加する'), default_value="課題を追加する",size=(35, 1), key='cmd')],
-            [sg.Button('使い方を表示する', size=(30, 1))],
-            [sg.Button('OK'), sg.Button('終了')] ]
-
-window = sg.Window('your_burden', layout)
+#ここまで初期処理
 
 def writeline_file(text):
     with open(srcPath, 'a', encoding='UTF-8') as f:
         f.write(text + "\n")
+
+def all_writefile(array):
+    with open(srcPath, 'w', encoding='UTF-8') as f:
+        f.writelines(array) #既存データはすべて削除される
 
 def readFile():
     with open(srcPath, 'r', encoding='UTF-8') as f:
@@ -82,6 +115,11 @@ def readFile():
     for i in list(reversed(delList)):
         data.pop(i)
     return data
+
+def data_create(a,b,c,d,e):
+    #識別番号 // 科目名 // 詳細情報 // 提出期限yyyy/mm/dd hh:mm:ss // flag (completed, uncompleted)
+    s = a + "//" + b + "//" + c + "//" + d + "//" + e
+    return s
 
 def how_to_help():
     main_layout = [
@@ -168,7 +206,7 @@ def data_add_bulk():
                 bulkDate = bulkDate + datetime.timedelta(days=7)
             
             for bLine in bulkList:
-                data = str(totalLine) + "//" + values['subject'] + "//[第" + str(bLine[1]) + "]" + values['subjectInfo'].replace("//","/") + "//" + bLine[0] + "//uncompleted"
+                data = data_create(str(totalLine),values['subject'],"[第" + str(bLine[1]) + "]" + values['subjectInfo'].replace("//","/"),bLine[0],"uncompleted")
                 writeline_file(data)
                 totalLine += 1
 
@@ -213,7 +251,7 @@ def data_add():
 
         if event in (sg.WIN_CLOSED,"キャンセル"):
             main_window.close()
-            break
+            return None
 
         elif event == "追加":
             try:
@@ -236,8 +274,7 @@ def data_add():
                 continue
 
             strDate = values['kigen'][:-5] + '00:00'
-            data = str(totalLine) + "//" + values['subject'] + "//" + values['subjectInfo'].replace("//","/") + "//" + strDate + "//uncompleted"
-
+            data = data_create(str(totalLine),values['subject'],values['subjectInfo'].replace("//","/"),strDate,'uncompleted')
             writeline_file(data)
 
             confirm_layout = [
@@ -282,7 +319,7 @@ def data_select():
 
         if event in (sg.WIN_CLOSED, "キャンセル"):
             main_window.close()
-            break
+            return None
 
         elif event == "検索":
 
@@ -365,7 +402,7 @@ def data_remove():
 
         if event in (sg.WIN_CLOSED, "キャンセル"):
             main_window.close()
-            break
+            return None
 
         elif event == "削除":
             file = readFile()
@@ -398,7 +435,7 @@ def data_changeflag():
 
         if event in (sg.WIN_CLOSED, "キャンセル"):
             main_window.close()
-            break
+            return None
 
         elif event == "変更":
             file = readFile()
@@ -409,10 +446,8 @@ def data_changeflag():
                 data = file[i].split('//')
                 if data[0] == values['flagNum']:
                     data[4] = "uncompleted\n" if data[4] == "completed\n" else "completed\n"
-                    file[i] = ""
-                    for j in data:
-                        file[i] += j + "//"
-                    file[i] = file[i][:-2]
+                    file[i] = data_create(data[0],data[1],data[2],data[3],data[4])
+                    all_writefile(file)
                     condition = str(["未完了" if data[4] == "uncompleted\n" else "完了"])
                     print(str(data[0]) + "番のデータ(" + str(data[1]) + ")のフラグを" + condition + "に変更しました。")
                     failFlag = False
@@ -422,18 +457,83 @@ def data_changeflag():
                 print("入力値が正しくありません。")
                 break
 
-            fileStr = ""
-            for j in file:
-                fileStr += j
-            with open(srcPath, mode='w') as f:
-                f.write(fileStr)
 
-#一括で課題を追加する項目と、一週間分の課題を表示する機能を追加
+def data_repair():
+    main_layout = [
+        [sg.Text("β1.0.0にてデータ識別番号を割り振れないバグが存在しました。")],
+        [sg.Text("実行すると、バグを検知し問題がある場合修復を実行します。")],
+        [sg.Button("修復", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
+    
+    main_window = sg.Window("データの修復", main_layout)
+
+    while True:
+        event, values = main_window.read()
+
+        if event in (sg.WIN_CLOSED, "キャンセル"):
+            main_window.close()
+            return None
+
+        elif event == "修復":
+            main_window.Hide()
+            file = readFile()
+            bugCheck = 0
+            fixFlag = False
+            for i in file:
+                if i.split('//')[0] == "0":
+                    bugCheck += 1
+                if bugCheck >= 2:
+                    fixFlag = True
+                    break
+
+            if fixFlag:
+                fixCnt = 0
+                fixedFileResult = []
+                splitTemp = []
+                for i in range(len(file)): #ファイルを読み込んでsplitしてカウント＋1を代入、再構築しfixedFileに代入してファイルに書き込む
+                    splitTemp = file[i].split('//')
+                    splitTemp[0] = str(fixCnt)
+                    fixCnt += 1
+                    data = data_create(splitTemp[0],splitTemp[1],splitTemp[2],splitTemp[3],splitTemp[4])
+                    fixedFileResult.append(data)
+
+                all_writefile(fixedFileResult)
+
+                fixed_layout = [
+                    [sg.Text("データを修復しました。")],
+                    [sg.Button("OK", size=(10, 1))]]
+                fixed_window = sg.Window("complete", fixed_layout)
+                while True:
+                    event, values = fixed_window.read()
+
+                    if event in (sg.WIN_CLOSED, "OK"):
+                        fixed_window.close()
+                        return None
+            else:
+                fixed_layout = [
+                    [sg.Text("バグは見つかりませんでした。")],
+                    [sg.Button("OK", size=(10, 1))]]
+                fixed_window = sg.Window("complete", fixed_layout)
+                while True:
+                    event, values = fixed_window.read()
+
+                    if event in (sg.WIN_CLOSED, "OK"):
+                        fixed_window.close()
+                        return None
+
+#メイン処理
+
+layout = [  [sg.Text('大学からのburdenを管理します。')],
+            [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '完了フラグを付ける', '[b1.0.0利用者向け]ファイルの修復', '存在しない（追加ミス）課題を玉砕する', '課題を一括で追加する'), default_value="課題を追加する",size=(35, 1), key='cmd')],
+            [sg.Button('使い方を表示する', size=(30, 1))],
+            [sg.Button('OK'), sg.Button('終了')] ]
+
+window = sg.Window('your_burden', layout)
+
 while True:
     event, values = window.read()
 
     if event in (sg.WIN_CLOSED, '終了'):
-        break
+        exit()
     elif event == "使い方を表示する":
         window.Hide()
         main_return = how_to_help()
@@ -450,13 +550,8 @@ while True:
             main_return = data_remove()
         elif values['cmd'] == '完了フラグを付ける':
             main_return = data_changeflag()
+        elif values['cmd'] == '[b1.0.0利用者向け]ファイルの修復':
+            main_return = data_repair()
 
     if main_return is None:
         window.UnHide()
-
-window.close()
-exit()
-
-dt_now = datetime.datetime.now()
-dateText = dt_now.strftime("%Y/%m/%d %H:%M:%s")
-print(dt_now)
