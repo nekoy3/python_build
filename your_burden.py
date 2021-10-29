@@ -1,12 +1,10 @@
 # coding: utf_8
 #操作ファイルはburden.txtファイル固定にアクセスするものとする。無ければ生成し通知する。
 import datetime
-from tkinter.constants import E
 import PySimpleGUI as sg
 import os
 from sys import exit
 import shutil
-import codecs
 
 sg.theme('DarkGreen7')   # デザインテーマの設定
 
@@ -192,11 +190,9 @@ def data_add_bulk():
                         break
                 continue
 
-            try:
-                with open(srcPath) as f:
-                    totalLine = sum(1 for line in f)
-            except:
-                totalLine = 0
+            f = readFile()
+            getNumberArray = [0] + [int(readArray.split('//')[0]) for readArray in f]
+            newNumber = max(getNumberArray) + 1
             
             strDate = values['kigen'][:-5] + '00:00'
             bulkDate = datetime.datetime.strptime(strDate, '%Y-%m-%d %H:%M:%W')
@@ -206,9 +202,9 @@ def data_add_bulk():
                 bulkDate = bulkDate + datetime.timedelta(days=7)
             
             for bLine in bulkList:
-                data = data_create(str(totalLine),values['subject'],"[第" + str(bLine[1]) + "]" + values['subjectInfo'].replace("//","/"),bLine[0],"uncompleted")
+                data = data_create(newNumber,values['subject'],"[第" + str(bLine[1]) + "]" + values['subjectInfo'].replace("//","/"),bLine[0],"uncompleted")
                 writeline_file(data)
-                totalLine += 1
+                newNumber += 1
 
             confirm_layout = [
                 [sg.Text("課題を追加しました。続けて追加しますか？")],
