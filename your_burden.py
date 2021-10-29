@@ -119,6 +119,34 @@ def data_create(a,b,c,d,e):
     s = a + "//" + b + "//" + c + "//" + d + "//" + e
     return s
 
+def error_export(e):
+    s = "[type]:" + str(type(e)) + "\n[all]:" + str(e)
+    return s
+
+def error_open(e): #exceptでas eでエラーを拾って実行し、その後returnとウィンドウのcloseを実行する
+    error_layout = [
+        [sg.Text("データ読み込み時に問題が発生しました。実行を中止します。")],
+        [sg.Text("原因が解決できない場合はこの画面のスクリーンショットを取り製作者に見せてください。")],
+        [sg.Text(error_export(e))],
+        [sg.Button("OK", size=(10, 1))]]
+    error_window = sg.Window("error", error_layout)
+    while True:
+        event, values = error_window.read()
+        if event in (sg.WIN_CLOSED, "OK"):
+            error_window.close()
+            return
+
+def message_window(msg,*name): #アスタリスクを付けた仮引数は可変引数として、存在しても無くても可
+    error_layout = [
+        [sg.Text(msg)],
+        [sg.Button("OK", size=(30, 1))]]
+    error_window = sg.Window([name if name != "" else "error"], error_layout)
+    while True:
+        event, values = error_window.read()
+        if event == sg.WIN_CLOSED or event == "OK":
+            error_window.close()
+            return
+
 def how_to_help():
     main_layout = [
         [sg.Text("このプログラムは、課題を一括で管理し効率化を図ったプログラムです。")],
@@ -161,48 +189,35 @@ def data_add_bulk():
             break
 
         elif event == "追加":
+            if values['subject'] == "" or values['subjectInfo'] == "" or values['kigen'] == "" or values['start'] == "" or values['end'] == "":
+                message_window("空白欄が存在します。")
+                continue
             start = int(values['start'])
             end = int(values['end'])
 
-            if values['subject'] == "" or values['subjectInfo'] == "" or values['kigen'] == "" or start == "" or end == "":
-                error_layout = [
-                    [sg.Text("空白欄が存在します。")],
-                    [sg.Button("OK", size=(10, 1))]]
-                error_window = sg.Window("error", error_layout)
-
-                while True:
-                    event, values = error_window.read()
-                    if event in (sg.WIN_CLOSED, "OK"):
-                        error_window.close()
-                        break
-                continue
-
             if start >= end or start < 1 or end > 14:
-                error_layout = [
-                    [sg.Text("値が不正です。")],
-                    [sg.Button("OK", size=(10, 1))]]
-                error_window = sg.Window('error', error_layout)
-
-                while True:
-                    event1, values1 = error_window.read()
-                    if event1 in (sg.WIN_CLOSED, "OK"):
-                        error_window.close()
-                        break
+                message_window("値が不正です。")
                 continue
 
             f = readFile()
             getNumberArray = [0] + [int(readArray.split('//')[0]) for readArray in f]
             newNumber = max(getNumberArray) + 1
             
-            strDate = values['kigen'][:-5] + '00:00'
-            bulkDate = datetime.datetime.strptime(strDate, '%Y-%m-%d %H:%M:%W')
+            try:
+                strDate = values['kigen'][:-5] + '00:00'
+                bulkDate = datetime.datetime.strptime(strDate, '%Y-%m-%d %H:%M:%W')
+            except Exception as e:
+                error_open(e)
+                main_window.close()
+                return None
+
             bulkList = []
             for i in range(start,end+1):
                 bulkList.append([bulkDate.strftime('%Y-%m-%d %H:%M:%S'), i])
                 bulkDate = bulkDate + datetime.timedelta(days=7)
             
             for bLine in bulkList:
-                data = data_create(newNumber,values['subject'],"[第" + str(bLine[1]) + "]" + values['subjectInfo'].replace("//","/"),bLine[0],"uncompleted")
+                data = data_create(str(newNumber),values['subject'],"[第" + str(bLine[1]) + "]" + values['subjectInfo'].replace("//","/"),bLine[0],"uncompleted")
                 writeline_file(data)
                 newNumber += 1
 
@@ -250,27 +265,16 @@ def data_add():
             return None
 
         elif event == "追加":
-            try:
-                with open(srcPath) as f:
-                    totalLine = sum(1 for line in f)
-            except:
-                totalLine = 0
+            f = readFile()
+            getNumberArray = [0] + [int(readArray.split('//')[0]) for readArray in f]
+            newNumber = max(getNumberArray) + 1
 
             if values['subject'] == "" or values['subjectInfo'] == "" or values['kigen'] == "":
-                error_layout = [
-                    [sg.Text("空白欄が存在します。")],
-                    [sg.Button("OK", size=(10, 1))]]
-                error_window = sg.Window("error", error_layout)
-
-                while True:
-                    event, values = error_window.read()
-                    if event == sg.WIN_CLOSED or event == "OK":
-                        error_window.close()
-                        break
+                message_window("空白欄が存在します。")
                 continue
 
             strDate = values['kigen'][:-5] + '00:00'
-            data = data_create(str(totalLine),values['subject'],values['subjectInfo'].replace("//","/"),strDate,'uncompleted')
+            data = data_create(str(newNumber),values['subject'],values['subjectInfo'].replace("//","/"),strDate,'uncompleted')
             writeline_file(data)
 
             confirm_layout = [
@@ -318,17 +322,19 @@ def data_select():
             return None
 
         elif event == "検索":
-
             main_window['-OUTPUT-'].update('')
-
             file = readFile()
-
             for i in range(len(file)):
                 file[i] = file[i].split('//')
-                file[i][3] = datetime.datetime.strptime(file[i][3], '%Y-%m-%d %H:%M:%W')
+                try:
+                    file[i][3] = datetime.datetime.strptime(file[i][3], '%Y-%m-%d %H:%M:%W')
+                except Exception as e:
+                    error_open(e)
 
             dt_now = datetime.datetime.now()
             failFlag = True
+
+            #フラグ状態、提出期限期間を個々で入力させた方がスマート？
             if values['cmd'] == '今後一週間内での課題を表示する(未完了のみ)':
                 for data in file:
                     if dt_now <= data[3] and (dt_now + datetime.timedelta(days=7)) >= data[3] and data[4] == "uncompleted\n":
@@ -505,23 +511,15 @@ def data_repair():
                         fixed_window.close()
                         return None
             else:
-                fixed_layout = [
-                    [sg.Text("バグは見つかりませんでした。")],
-                    [sg.Button("OK", size=(10, 1))]]
-                fixed_window = sg.Window("complete", fixed_layout)
-                while True:
-                    event, values = fixed_window.read()
-
-                    if event in (sg.WIN_CLOSED, "OK"):
-                        fixed_window.close()
-                        return None
+                message_window("バグは見つかりませんでした。","fixed")
+                return None
 
 #メイン処理
 
 layout = [  [sg.Text('大学からのburdenを管理します。')],
             [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '完了フラグを付ける', '[b1.0.0利用者向け]ファイルの修復', '存在しない（追加ミス）課題を玉砕する', '課題を一括で追加する'), default_value="課題を追加する",size=(35, 1), key='cmd')],
             [sg.Button('使い方を表示する', size=(30, 1))],
-            [sg.Button('OK'), sg.Button('終了')] ]
+            [sg.Button('OK', size=(10, 1)), sg.Button('終了', size=(10, 1))] ]
 
 window = sg.Window('your_burden', layout)
 
