@@ -97,7 +97,7 @@ else:
 
 def writeline_file(text):
     with open(srcPath, 'a', encoding='UTF-8') as f:
-        f.write(text + "\n")
+        f.write(text + "\n") #追記モードでファイルを開く
 
 def all_writefile(array):
     with open(srcPath, 'w', encoding='UTF-8') as f:
@@ -105,7 +105,7 @@ def all_writefile(array):
 
 def readFile():
     with open(srcPath, 'r', encoding='UTF-8') as f:
-        data = list(f)
+        data = list(f) #1行ずつリストに格納
     delList = []
     for i in range(len(data)):
         if data[i] == "#REMOVED!!\n":
@@ -168,14 +168,65 @@ def how_to_help():
             break
     return None
 
+def renumbering(data):
+    for i in range(len(data)):
+        splitTemp = data[i].split('//')
+        splitTemp[0] = str(i)
+        data[i] = data_create(splitTemp[0],splitTemp[1],splitTemp[2],splitTemp[3],splitTemp[4])
+    return data
+
+def confirm_window(msg):
+    confirm_layout = [
+        [sg.Text(msg)],
+        [sg.Button("OK", size=(10, 1)), sg.Button("Cancel", size=(10, 1))]]
+
+    confirm_window = sg.Window("確認", confirm_layout)
+
+    while True:
+        event, values = confirm_window.read()
+        if event in (sg.WIN_CLOSED, "Cancel"):
+            confirm_window.close()
+            return False
+        elif event == "OK":
+            confirm_window.close()
+            return True
+
+def days_skip_time(d):
+    time = datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S') + datetime.timedelta(days=7)
+    s = time.strftime('%Y-%m-%d %H:%M:%S')
+    return s
+
+def skip_holiday(array,num):
+    first = True
+    nowSkipDataTime = None
+    confirmData = []
+    for i in range(len(array)):
+        splitTemp = array[i].split('//')
+        if splitTemp[3] == nowSkipDataTime and first == False:
+            nowSkipDataTime = days_skip_time(splitTemp[3])
+            splitTemp[3] = nowSkipDataTime
+            array[i] = data_create(splitTemp[0],splitTemp[1],splitTemp[2],splitTemp[3],splitTemp[4])
+            confirmData.append(array[i])
+        elif splitTemp[3] == nowSkipDataTime and first == False:
+            return array
+
+        if splitTemp[0] == str(num) and first:
+            first = False
+            firstData = array[i]
+            nowSkipDataTime = days_skip_time(splitTemp[3])
+            splitTemp[3] = nowSkipDataTime
+            array[i] = data_create(splitTemp[0],splitTemp[1],splitTemp[2],splitTemp[3],splitTemp[4])
+            confirmData.append(array[i])
+    return array,confirmData,firstData
+
 def data_add_bulk():
 
     main_layout = [
         [sg.Text("課題を一括で追加します。")],
         [sg.Text("講義の初回と最終回、科目名、提出期限（時間まで指定可能）、詳細（内容や提出先）を記述し一括にその科目最終回までの課題を登録します。")],
         [sg.Text("科目名"),sg.Input(key='subject',size=(10, 1)),sg.Text("課題内容"),sg.Input(key='subjectInfo',size=(35, 1))],
-        [sg.Text("提出期限(回を重ねるたび7の倍数日に登録)(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(35, 1))],
-        [sg.Text("最初の提出時の回"),sg.Input(key='start',size=(10, 1)),sg.Text("最後の提出回"),sg.Input(key='end',size=(10, 1))],
+        [sg.Text("提出期限(回を重ねるたび7の倍数日に登録)(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(35, 1), readonly=True, text_color='#ff69b4')],
+        [sg.Text("最初の提出時の回"),sg.Combo(([i for i in range(1,15)]),readonly=True,key='start',size=(10, 1), text_color='#ff69b4', default_value=1),sg.Text("最終提出時の回"),sg.Combo(([i for i in range(1,15)]),readonly=True,key='end',size=(10, 1),text_color='#ff69b4', default_value=14)],
         [sg.Text("最初の提出時の回には次回の講義分の課題（例：第七回なら「7」）、最後は最終回の値(例：14回講義で第十四回が期末試験で課題がない場合は「13」)と入力")],
         [sg.Button("追加", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
 
@@ -192,6 +243,7 @@ def data_add_bulk():
             if values['subject'] == "" or values['subjectInfo'] == "" or values['kigen'] == "" or values['start'] == "" or values['end'] == "":
                 message_window("空白欄が存在します。")
                 continue
+
             start = int(values['start'])
             end = int(values['end'])
 
@@ -252,7 +304,7 @@ def data_add():
         [sg.Text("課題を追加します。")],
         [sg.Text("科目名、提出期限（時間まで指定可能）、詳細（内容や提出先）を記述し課題を登録します。")],
         [sg.Text("科目名"),sg.Input(key='subject',size=(10, 1)),sg.Text("課題内容"),sg.Input(key='subjectInfo',size=(35, 1))],
-        [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(35, 1))],
+        [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(35, 1), readonly=True, text_color='#ff69b4')],
         [sg.Button("追加", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
 
     main_window = sg.Window("課題を追加する", main_layout)
@@ -307,8 +359,8 @@ def data_select():
 
     main_layout = [
         [sg.Text("課題を検索します。")],
-        [sg.Text('操作', size=(10, 1)),sg.Combo(('今後一週間内での課題を表示する(未完了のみ)','今後一週間内での課題を表示する(全て)','期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="今後一週間内での課題を表示する(未完了のみ)",size=(55, 1), key='cmd')],
-        [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(20, 1))],
+        [sg.Text('操作', size=(10, 1)),sg.Combo(('今後一週間内での課題を表示する(未完了のみ)','今後一週間内での課題を表示する(全て)','期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="今後一週間内での課題を表示する(未完了のみ)",size=(55, 1), key='cmd', readonly=True, text_color='#ff69b4')],
+        [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(20, 1), readonly=True, text_color='#ff69b4')],
         [sg.Output(size=(50,10), key='-OUTPUT-')],
         [sg.Button("検索", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
     
@@ -399,6 +451,7 @@ def data_remove():
     
     main_window = sg.Window("課題を削除する", main_layout)
 
+    backup = None
     while True:
         event, values = main_window.read()
 
@@ -407,21 +460,28 @@ def data_remove():
             return None
 
         elif event == "削除":
-            file = readFile()
-            main_window['-OUTPUT-'].update('')
-            for i in range(len(file)):
-                burNum = file[i].split('//')[0]
-                if burNum == values['removeNum']:
-                    print(file[i] + "削除しました。")
-                    file[i] = "#REMOVED!!\n"
-                    fileStr = ""
-                    for j in file:
-                        fileStr += i
-                    with open(srcPath, mode='w') as f:
-                        f.write(fileStr)
-                    break
-            else:
-                print("入力値が正しくありません。")
+                file = readFile()
+                main_window['-OUTPUT-'].update('')
+                for i in range(len(file)):
+                    burNum = file[i].split('//')[0]
+                    try:
+                        rmNum = int(values['removeNum'])
+                    except:
+                        main_window['-OUTPUT-'].update("エラー：削除する番号を入力してください。")
+                        continue
+                    if burNum == str(rmNum):
+                        confirmflag = confirm_window("本当に削除してもよろしいですか？二度と復元できません。\n一括追加した課題の場合は特に注意してください。（祝日分を飛ばす機能が実装されています。）\n" + file[i])
+                        if confirmflag:
+                            print(file[i] + "削除しました。")
+                            file.pop(i)
+                            file = renumbering(file)
+                            all_writefile(file)
+                            break
+                        else:
+                            print("削除を中止しました。")
+                            break
+                else:
+                    print("入力値が正しくありません。")
 
 def data_changeflag():
     main_layout = [
@@ -446,7 +506,13 @@ def data_changeflag():
 
             for i in range(len(file)):
                 data = file[i].split('//')
-                if data[0] == values['flagNum']:
+                try:
+                    flagNum = int(values['flagNum'])
+                except:
+                    main_window['-OUTPUT-'].update("エラー：変更する番号を入力してください。")
+                    continue
+
+                if data[0] == str(flagNum):
                     data[4] = "uncompleted\n" if data[4] == "completed\n" else "completed\n"
                     file[i] = data_create(data[0],data[1],data[2],data[3],data[4])
                     all_writefile(file)
@@ -457,7 +523,6 @@ def data_changeflag():
                 
             if failFlag:
                 print("入力値が正しくありません。")
-                break
 
 
 def data_repair():
@@ -481,23 +546,14 @@ def data_repair():
             bugCheck = 0
             fixFlag = False
             for i in file:
-                if i.split('//')[0] == "0":
+                if i.split('//')[0] in ("0", "1"):
                     bugCheck += 1
-                if bugCheck >= 2:
+                if bugCheck >= 3:
                     fixFlag = True
                     break
 
             if fixFlag:
-                fixCnt = 0
-                fixedFileResult = []
-                splitTemp = []
-                for i in range(len(file)): #ファイルを読み込んでsplitしてカウント＋1を代入、再構築しfixedFileに代入してファイルに書き込む
-                    splitTemp = file[i].split('//')
-                    splitTemp[0] = str(fixCnt)
-                    fixCnt += 1
-                    data = data_create(splitTemp[0],splitTemp[1],splitTemp[2],splitTemp[3],splitTemp[4])
-                    fixedFileResult.append(data)
-
+                fixedFileResult = renumbering(file)
                 all_writefile(fixedFileResult)
 
                 fixed_layout = [
@@ -513,11 +569,55 @@ def data_repair():
             else:
                 message_window("バグは見つかりませんでした。","fixed")
                 return None
+        
+def data_skip():
+    main_layout = [
+        [sg.Text("祝日分を飛ばす機能を実装しました。")],
+        [sg.Text("祝日によって存在しない提出期限の日のデータの番号を指定して実行すると、")],
+        [sg.Text("一括で追加された課題含め、一週間期限をスキップします。")],
+        [sg.Text("例：水曜日が祝日で月曜日期限の第七回プログラム演習CXIVが延期になった↓")],
+        [sg.Text("「月曜日提出期限」に設定された第7回プログラム演習のデータを指定して実行する")],
+        [sg.Output(size=(50, 1), key='-OUTPUT-'),sg.Input(key='skipNum',size=(5, 1))],
+        [sg.Button("実行", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
+    
+    main_window = sg.Window("祝日分を飛ばす", main_layout)
+
+    while True:
+        event, values = main_window.read()
+
+        if event in (sg.WIN_CLOSED, "キャンセル"):
+            main_window.close()
+            return None
+
+        elif event == "実行":
+            file = readFile()
+            main_window['-OUTPUT-'].update('')
+            try:
+                skipNum = int(values['skipNum'])
+            except:
+                main_window['-OUTPUT-'].update("エラー：祝日分を飛ばす日数を入力してください。")
+                continue
+
+            if skipNum > 0:
+                skipFile,confirmArray,firstData = skip_holiday(file,skipNum)
+                confirmString = ''
+                for i in confirmArray:
+                    a = i.split('//')
+                    s = "num=" + a[0] + " subject=" + a[1] + " date=" + a[3] + " flag=" + str(["完了" if a[4] == "completed\n" else "未完了"]) + "\n"
+                    confirmString += str(s)
+                confirmFlag = confirm_window("これらのデータを一括に一週間分スキップします。\nこの操作は取り消せません。よろしいですか？\n" + confirmString)
+                if confirmFlag:
+                    all_writefile(skipFile)
+                    print("一週間分スキップしました。最初のデータの結果を表示します。\n" + confirmArray[0] + "↑変更後\n" + firstData)
+                else:
+                    print("キャンセルしました。")
+            else:
+                print("入力値が正しくありません。")
 
 #メイン処理
 
 layout = [  [sg.Text('大学からのburdenを管理します。')],
-            [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '完了フラグを付ける', '[b1.0.0利用者向け]ファイルの修復', '存在しない（追加ミス）課題を玉砕する', '課題を一括で追加する'), default_value="課題を追加する",size=(35, 1), key='cmd')],
+            [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '完了フラグを付ける', '課題を一括で追加する', '祝日分でスキップされた課題を操作する', '[b1.0.0利用者向け]ファイルの修復', '存在しない（追加ミス）課題を玉砕する'), default_value="課題を追加する",size=(35, 1), key='cmd', readonly=True, text_color='#ff69b4')],
             [sg.Button('使い方を表示する', size=(30, 1))],
             [sg.Button('OK', size=(10, 1)), sg.Button('終了', size=(10, 1))] ]
 
@@ -546,6 +646,10 @@ while True:
             main_return = data_changeflag()
         elif values['cmd'] == '[b1.0.0利用者向け]ファイルの修復':
             main_return = data_repair()
+        elif values['cmd'] == '祝日分でスキップされた課題を操作する':
+            main_return = data_skip()
 
     if main_return is None:
         window.UnHide()
+    else:
+        exit()
