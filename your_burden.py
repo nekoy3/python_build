@@ -1,5 +1,4 @@
 # coding: utf_8
-#間違えて削除したので再コミット
 import datetime
 import PySimpleGUI as sg
 import os
@@ -9,102 +8,18 @@ import shutil
 sg.theme('DarkGreen7')   # デザインテーマの設定
 
 fname = '~/burden.txt'
-srcPath = os.path.expanduser(fname)
-flag = False
-
-if os.path.exists(srcPath):
-    print("ファイル認識",os.path.abspath(srcPath))
-else:
-    make_layout = [  [sg.Text('ファイルが存在しないため、\n同じ階層に記録用ファイルを作成します。')],
-                     [sg.Button('OK'), sg.Button('中止'), sg.Button('過去に作ったファイルを引き継ぐ')] ]
-    mkfilewindow = sg.Window('ファイルを新規作成', make_layout)
-    while True:
-        event, values = mkfilewindow.read()
-
-        if event == "OK":
-            mkfilewindow.close()
-            with open(srcPath, 'w') as f:
-                f.write('')
-            break
-
-        elif event in (sg.WIN_CLOSED,"中止"):
-            exit()
-        
-        elif event == "過去に作ったファイルを引き継ぐ":
-            repair_window_layout = [  [sg.Text('バージョンアップに伴い、データ保存位置が変更されました。')],
-                                      [sg.Text('OKを押すことで、ファイル位置をホームディレクトリ直下に移動しプログラムを継続します。')],
-                                      [sg.Button('OK'), sg.Button('キャンセル')] ]
-            mkfilewindow.Hide()
-            repairwindow = sg.Window('ファイルを引き継ぐ', repair_window_layout)
-            while True:
-                event, values = repairwindow.read()
-
-                if event == "OK":
-                    repairwindow.close()
-                    try:
-                        shutil.copy('./burden.txt', os.path.dirname(srcPath))
-                    except FileNotFoundError:
-                        error_layout = [
-                            [sg.Text("ファイルの移動に失敗しました。")],
-                            [sg.Text("このアプリと同じ階層にburden.txtが存在しません。")],
-                            [sg.Button("OK", size=(10, 1))]]
-                        error_window = sg.Window('error', error_layout)
-
-                        while True:
-                            event1, values1 = error_window.read()
-                            if event1 in (sg.WIN_CLOSED, "OK"):
-                                error_window.close()
-                                mkfilewindow.UnHide()
-                                break
-                    else:
-                        if os.path.exists(srcPath):
-                            success_layout  = [
-                                [sg.Text("ファイルの移動に成功しました。")],
-                                [sg.Button("OK", size=(10, 1))]]
-                            success_window = sg.Window('success', success_layout)
-                            os.remove('./burden.txt')
-
-                            while True:
-                                event1, values1 = success_window.read()
-                                if event1 in (sg.WIN_CLOSED, "OK"):
-                                    success_window.close()
-                                    flag = True
-                                    break
-                        else:
-                            error_layout = [
-                                [sg.Text("ファイルの移動に失敗しました。")],
-                                [sg.Text("ファイルは存在しますが何かしらの問題が発生しました。このエラーが発生した場合は作成者に連絡してください。")],
-                                [sg.Text("os.path.exists(srcPath)=" + os.path.exists(srcPath) + " os.path.exists(./burden.txt)=" + os.path.exists('./burden.txt'))],
-                                [sg.Button("OK", size=(10, 1))]]
-                            error_window = sg.Window('error', error_layout)
-
-                            while True:
-                                event1, values1 = error_window.read()
-                                if event1 in (sg.WIN_CLOSED, "OK"):
-                                    error_window.close()
-                                    exit()
-
-                elif event in (sg.WIN_CLOSED,"キャンセル"):
-                    repairwindow.close()
-                    mkfilewindow.UnHide()
-                    break
-                if flag:
-                    break
-            if flag:
-                break   #<--メソッド化してreturnすれば省略できるので後々対応
-
-#ここまで初期処理
+FILEPATH = os.path.expanduser(fname)
 
 def writeline_file(text):
-    with open(srcPath, 'a', encoding='UTF-8') as f:
+    with open(FILEPATH, 'a', encoding='UTF-8') as f:
         f.write(text + "\n") #追記モードでファイルを開く
 
 def all_writefile(array):
-    with open(srcPath, 'w', encoding='UTF-8') as f:
+    with open(FILEPATH, 'w', encoding='UTF-8') as f:
         f.writelines(array) #既存データはすべて削除される
 
 def readFile():
-    with open(srcPath, 'r', encoding='UTF-8') as f:
+    with open(FILEPATH, 'r', encoding='UTF-8') as f:
         data = list(f) #1行ずつリストに格納
     delList = []
     for i in range(len(data)):
@@ -151,7 +66,7 @@ def how_to_help():
     main_layout = [
         [sg.Text("このプログラムは、課題を一括で管理し効率化を図ったプログラムです。")],
         [sg.Text("課題を登録したいとき「課題を追加」、課題を一括で登録したいとき「課題を一括で追加")],
-        [sg.Text("課題の完了を登録したいとき「完了フラグを付ける」、課題を閲覧する時「現実を見る」")],
+        [sg.Text("課題を閲覧する時「現実を見る」そして「完了フラグを変える（課題を完了状態にする）")],
         [sg.Text("課題を間違えて追加してしまった場合は「存在しない課題を玉砕する」")],
         [sg.Text("という操作のみです。分からない事があれば製作者(猫山さん。)に聞いてください。")],
         [sg.Text("")],
@@ -167,6 +82,19 @@ def how_to_help():
             main_window.close()
             break
     return None
+
+def update_infomation():
+    main_layout = [
+        [sg.Text("☆β1.0.1")],
+        [sg.Text("多くのバグの修正、機能の追加、安定化")],
+        [sg.Text("☆β1.0.2")],
+        [sg.Text("〇祝日で課題を一括追加した場合に都合が合わなくなる問題を手動で修正できる機能を追加")],
+        [sg.Text("〇一括課題追加の回指定をプルダウンメニュー指定方式へ変更")],
+        [sg.Text("〇プルダウンメニュー全般でユーザーがテキストを編集できないように修正")],
+        [sg.Text("☆β1.1.0")],
+        [sg.Text("〇課題閲覧からフラグを変更できるように変更")],
+        [sg.Text("〇サーバファイルと比較し更新が存在しないかを自動で確認する機能を追加")],
+        [sg.Button("OK", size=(10, 1))]]
 
 def renumbering(data):
     for i in range(len(data)):
@@ -191,7 +119,7 @@ def confirm_window(msg):
             confirm_window.close()
             return True
 
-def days_skip_time(d):
+def seven_days_skip_time(d):
     time = datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S') + datetime.timedelta(days=7)
     s = time.strftime('%Y-%m-%d %H:%M:%S')
     return s
@@ -203,7 +131,7 @@ def skip_holiday(array,num):
     for i in range(len(array)):
         splitTemp = array[i].split('//')
         if splitTemp[3] == nowSkipDataTime and first == False:
-            nowSkipDataTime = days_skip_time(splitTemp[3])
+            nowSkipDataTime = seven_days_skip_time(splitTemp[3])
             splitTemp[3] = nowSkipDataTime
             array[i] = data_create(splitTemp[0],splitTemp[1],splitTemp[2],splitTemp[3],splitTemp[4])
             confirmData.append(array[i])
@@ -213,7 +141,7 @@ def skip_holiday(array,num):
         if splitTemp[0] == str(num) and first:
             first = False
             firstData = array[i]
-            nowSkipDataTime = days_skip_time(splitTemp[3])
+            nowSkipDataTime = seven_days_skip_time(splitTemp[3])
             splitTemp[3] = nowSkipDataTime
             array[i] = data_create(splitTemp[0],splitTemp[1],splitTemp[2],splitTemp[3],splitTemp[4])
             confirmData.append(array[i])
@@ -362,7 +290,9 @@ def data_select():
         [sg.Text('操作', size=(10, 1)),sg.Combo(('今後一週間内での課題を表示する(未完了のみ)','今後一週間内での課題を表示する(全て)','期限が迫っている未完了の課題を表示する', '期限過ぎているのも含め未完了の課題を表示する', '期限がまだあるが、完了した課題を見て悦に浸る', '期限が過ぎた、絶望の課題','指定日時以降が期限の課題'), default_value="今後一週間内での課題を表示する(未完了のみ)",size=(55, 1), key='cmd', readonly=True, text_color='#ff69b4')],
         [sg.Text("提出期限(yyyy/mm/dd 時:分:秒)"),sg.CalendarButton('calender', target='kigen'),sg.Input(key='kigen',size=(20, 1), readonly=True, text_color='#ff69b4')],
         [sg.Output(size=(50,10), key='-OUTPUT-')],
-        [sg.Button("検索", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
+        [sg.Text("課題のフラグを変更します。（未完了→完了、完了→未完了）")],
+        [sg.Text("検索して表示された番号を指定してフラグを変更(課題の完了未完了の設定)してください。"),sg.Input(key='flagNum',size=(5, 1))],
+        [sg.Button("検索", size=(10, 1)),sg.Button("フラグの変更", size=(10, 1)),sg.Button("キャンセル", size=(10, 1))]]
     
     main_window = sg.Window("課題を検索する", main_layout)
 
@@ -386,7 +316,6 @@ def data_select():
             dt_now = datetime.datetime.now()
             failFlag = True
 
-            #フラグ状態、提出期限期間を個々で入力させた方がスマート？
             if values['cmd'] == '今後一週間内での課題を表示する(未完了のみ)':
                 for data in file:
                     if dt_now <= data[3] and (dt_now + datetime.timedelta(days=7)) >= data[3] and data[4] == "uncompleted\n":
@@ -441,6 +370,31 @@ def data_select():
 
             if failFlag:
                 print("該当データがありません。")
+
+        elif event == "フラグの変更":
+            file = readFile()
+            main_window['-OUTPUT-'].update('')
+            failFlag = True
+
+            for i in range(len(file)):
+                data = file[i].split('//')
+                try:
+                    flagNum = int(values['flagNum'])
+                except:
+                    main_window['-OUTPUT-'].update("エラー：変更する番号を入力してください。")
+                    continue
+
+                if data[0] == str(flagNum):
+                    data[4] = "uncompleted\n" if data[4] == "completed\n" else "completed\n"
+                    file[i] = data_create(data[0],data[1],data[2],data[3],data[4])
+                    all_writefile(file)
+                    condition = str(["未完了" if data[4] == "uncompleted\n" else "完了"])
+                    print(str(data[0]) + "番のデータ(" + str(data[1]) + ")のフラグを" + condition + "に変更しました。")
+                    failFlag = False
+                    break
+                
+            if failFlag:
+                print("入力値が正しくありません。")
 
 def data_remove():
     main_layout = [
@@ -614,42 +568,115 @@ def data_skip():
             else:
                 print("入力値が正しくありません。")
 
-#メイン処理
+def start():
+    flag = False
 
-layout = [  [sg.Text('大学からのburdenを管理します。')],
-            [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '完了フラグを付ける', '課題を一括で追加する', '祝日分でスキップされた課題を操作する', '[b1.0.0利用者向け]ファイルの修復', '存在しない（追加ミス）課題を玉砕する'), default_value="課題を追加する",size=(35, 1), key='cmd', readonly=True, text_color='#ff69b4')],
-            [sg.Button('使い方を表示する', size=(30, 1))],
-            [sg.Button('OK', size=(10, 1)), sg.Button('終了', size=(10, 1))] ]
-
-window = sg.Window('your_burden', layout)
-
-while True:
-    event, values = window.read()
-
-    if event in (sg.WIN_CLOSED, '終了'):
-        exit()
-    elif event == "使い方を表示する":
-        window.Hide()
-        main_return = how_to_help()
-    elif event == 'OK':
-        window.Hide()
-            
-        if values['cmd'] == '課題を追加する':
-            main_return = data_add()
-        if values['cmd'] == '課題を一括で追加する':
-            main_return = data_add_bulk()
-        elif values['cmd'] == '現実を見る（課題を閲覧する）':
-            main_return = data_select()
-        elif values['cmd'] == '存在しない（追加ミス）課題を玉砕する':
-            main_return = data_remove()
-        elif values['cmd'] == '完了フラグを付ける':
-            main_return = data_changeflag()
-        elif values['cmd'] == '[b1.0.0利用者向け]ファイルの修復':
-            main_return = data_repair()
-        elif values['cmd'] == '祝日分でスキップされた課題を操作する':
-            main_return = data_skip()
-
-    if main_return is None:
-        window.UnHide()
+    if os.path.exists(FILEPATH):
+        print("ファイル認識",os.path.abspath(FILEPATH))
     else:
-        exit()
+        make_layout = [  [sg.Text('ファイルが存在しないため、\n同じ階層に記録用ファイルを作成します。')],
+                         [sg.Button('OK'), sg.Button('中止'), sg.Button('過去に作ったファイルを引き継ぐ')] ]
+        mkfilewindow = sg.Window('ファイルを新規作成', make_layout)
+
+        while True:
+            event, values = mkfilewindow.read()
+
+            if event == "OK":
+                mkfilewindow.close()
+                with open(FILEPATH, 'w') as f:
+                    f.write('')
+                break
+
+            elif event in (sg.WIN_CLOSED,"中止"):
+                exit()
+        
+            elif event == "過去に作ったファイルを引き継ぐ":
+                repair_window_layout = [  [sg.Text('バージョンアップに伴い、データ保存位置が変更されました。')],
+                                          [sg.Text('OKを押すことで、ファイル位置をホームディレクトリ直下に移動しプログラムを継続します。')],
+                                          [sg.Button('OK'), sg.Button('キャンセル')] ]
+                mkfilewindow.Hide()
+                repairwindow = sg.Window('ファイルを引き継ぐ', repair_window_layout)
+                while True:
+                    event, values = repairwindow.read()
+
+                    if event == "OK":
+                        repairwindow.close()
+                        try:
+                            shutil.copy('./burden.txt', os.path.dirname(FILEPATH))
+                        except FileNotFoundError:
+                            error_layout = [
+                                [sg.Text("ファイルの移動に失敗しました。")],
+                                [sg.Text("このアプリと同じ階層にburden.txtが存在しません。")],
+                                [sg.Button("OK", size=(10, 1))]]
+                            error_window = sg.Window('error', error_layout)
+
+                            while True:
+                                event1, values1 = error_window.read()
+                                if event1 in (sg.WIN_CLOSED, "OK"):
+                                    error_window.close()
+                                    mkfilewindow.UnHide()
+                                    break
+                        else:
+                            if os.path.exists(FILEPATH):
+                                message_window("ファイルの移動に成功しました。")
+                                os.remove('./burden.txt')
+                            else:
+                                error_layout = [
+                                    [sg.Text("ファイルの移動に失敗しました。")],
+                                    [sg.Text("ファイルは存在しますが何かしらの問題が発生しました。このエラーが発生した場合は作成者に連絡してください。")],
+                                    [sg.Text("os.path.exists(FILEPATH)=" + os.path.exists(FILEPATH) + " os.path.exists(./burden.txt)=" + os.path.exists('./burden.txt'))],
+                                    [sg.Button("OK", size=(10, 1))]]
+                                error_window = sg.Window('error', error_layout)
+
+                                while True:
+                                    event1, values1 = error_window.read()
+                                    if event1 in (sg.WIN_CLOSED, "OK"):
+                                        error_window.close()
+                                        exit()
+
+                    elif event in (sg.WIN_CLOSED,"キャンセル"):
+                        repairwindow.close()
+                        mkfilewindow.UnHide()
+                        break
+                    if flag:
+                        break
+                if flag:
+                    break
+
+def main():
+    start()
+    layout = [  [sg.Text('大学からのburdenを管理します。')],
+                [sg.Text('操作', size=(3, 1)),sg.Combo(('課題を追加する', '現実を見る（課題を閲覧する）', '課題を一括で追加する', '祝日分でスキップされた課題を操作する', '[b1.0.0利用者向け]ファイルの修復', '存在しない（追加ミス）課題を玉砕する'), default_value="課題を追加する",size=(35, 1), key='cmd', readonly=True, text_color='#ff69b4')],
+                [sg.Button('使い方を表示する', size=(30, 1))],
+                [sg.Button('OK', size=(10, 1)), sg.Button('終了', size=(10, 1))] ]
+
+    window = sg.Window('your_burden', layout)
+
+    while True:
+        event, values = window.read()
+
+        if event in (sg.WIN_CLOSED, '終了'):
+            exit()
+        elif event == "使い方を表示する":
+            window.Hide()
+            main_return = how_to_help()
+        elif event == 'OK':
+            window.Hide()
+            if values['cmd'] == '課題を追加する':
+                main_return = data_add()
+            elif values['cmd'] == '課題を一括で追加する':
+                main_return = data_add_bulk()
+            elif values['cmd'] == '現実を見る（課題を閲覧する）':
+                main_return = data_select()
+            elif values['cmd'] == '存在しない（追加ミス）課題を玉砕する':
+                main_return = data_remove()
+            elif values['cmd'] == '[b1.0.0利用者向け]ファイルの修復':
+                main_return = data_repair()
+            elif values['cmd'] == '祝日分でスキップされた課題を操作する':
+                main_return = data_skip()
+
+        if main_return is None:
+            window.UnHide()
+        else:
+            exit()
+main()
