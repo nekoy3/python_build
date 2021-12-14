@@ -24,6 +24,12 @@ else:
     cur.execute(
         'CREATE TABLE items(user_id INT, user_name STRING)'
     )
+    #説明文挿入用フィールド(description)
+    dList = ["0","description"]
+    cur.execute(
+            "INSERT INTO items ( user_id, user_name ) values ( ? , ? )",
+    dList)
+    conn.commit()
     conn.close()
     print("データベースファイルとテーブルを新規に作成しました。起動中はファイルを操作しないでください。")
 
@@ -41,7 +47,7 @@ def add_embed(title,descrip):
     return embed
 
 #管理者権限でのみ可能な処理実行後のembed(色がマゼンタ 0xc71585)
-def add_embed_supecial(title,descrip):
+def add_embed_special(title,descrip):
     embed = discord.Embed( # Embedを定義する
                           title=title + " (管理者権限処理)",# タイトル
                           color=0xc71585, # フレーム色指定(今回はマゼンタ)
@@ -79,7 +85,7 @@ def column_add(s):
     newColumn = cur.fetchall()[-1]
     callmsg = "カラムID:" + str(newColumn[0]) + "\nカラム名" + str(newColumn[1]) + "\nカラムのデータ型" + str(newColumn[2]) + "\n"
     conn.close()
-    embed = add_embed_supecial("カラムを追加しました。", callmsg)
+    embed = add_embed_special("カラムを追加しました。", callmsg)
     return embed
 
 #ユーザーのレコードの追加
@@ -104,7 +110,7 @@ def user_add(user):
 
 #bot終了処理
 def stop_bot():
-    embed = add_embed_supecial("終了します。", "起動は再びコンソールから行ってください。")
+    embed = add_embed_special("終了します。", "起動は再びコンソールから行ってください。")
     return embed
 
 #ユーザーの全カラムをinfoとして表示する
@@ -134,6 +140,24 @@ def user_info(name):
     conn.close()
     return embed
 
+#カラム(columnName)に対応する説明文(string)をdescriptionレコードにinsertしてembedを返す
+def column_edit(columnName, string):
+    conn = sqlite3.connect(dbname)
+    cur = conn.cursor()
+    cur.execute( #カラムを追加する時点であらかじめ値を存在させて、UPDATEしないとフィールドにカラムが存在しないという判定になるので対策する
+        "SELECT * FROM items WHERE user_name = '%s'"
+    %"description")
+    columnList = cur.fetchall()
+    print(str(columnList))
+    cur.execute(
+        "UPDATE items SET %s = %s WHERE user_name = '%s'"
+    %(columnName, string, "description"))
+    conn.commit()
+    callmsg = columnName + "の説明文をを「" + string + "」に変更しました。"
+    embed = add_embed_special("description専用レコード操作", callmsg)
+    conn.close()
+    return embed
+
 # 起動時に動作する処理
 @client.event
 async def on_ready():
@@ -149,6 +173,7 @@ async def on_message(message):
     # 「/neko」と発言したら「にゃーん」が返る処理
     if message.content == '/neko':
         await message.channel.send('にゃーん')
+
     #  /addcolumn A テーブルに「A」というカラムを追加する。
     if message.content.startswith('/addcolumn'):
         try:
@@ -158,6 +183,7 @@ async def on_message(message):
             return
         embed = column_add(columnName)
         await message.channel.send(embed=embed)
+
     #　/adduser 自身のユーザーIDのレコードを追加する。
     if message.content.startswith('/adduser'):
         user = [message.author.id]
@@ -165,11 +191,13 @@ async def on_message(message):
         user.append(str(u_id))
         embed = user_add(user)
         await message.channel.send(embed=embed)
+
     # /stopbot ボットを終了する。
     if message.content.startswith('/stopbot'):
         embed = stop_bot()
         await message.channel.send(embed=embed)
         await client.close()
+
     # /info @を除いたユーザ名 その人の情報を取得する。
     if message.content.startswith('/info'):
         try:
@@ -180,6 +208,21 @@ async def on_message(message):
         if info.startswith('@'):
             info = info.replace('@','')
         embed = user_info(info)
+        await message.channel.send(embed=embed)
+    
+    # /columnedit カラム名　カラムに対応する説明文をuser_id:0、user_name:infoのレコードに追加する。
+    if message.content.startswith('/columnedit'):
+        try:
+            columnName = message.content.split(' ')[1]
+        except:
+            await message.channel.send("カラム名を入力して実行してください。")
+            return
+        try:
+            info = message.content.split(' ')[2]
+        except:
+            await message.channel.send("情報を入力して実行してください。")
+            return
+        embed = column_edit(columnName, info)
         await message.channel.send(embed=embed)
 
 
