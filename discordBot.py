@@ -302,7 +302,7 @@ def help():
     embed.add_field(name=">dice",value="「dice 個数d面数」面数サイコロを個数回投げます。何も入力しなければ六面サイコロを２個投げます。", inline=False)
     embed.add_field(name=">ping",value="botのpingを表示します。", inline=False)
     embed.add_field(name=">invite",value="botのinviteリンクを表示します。", inline=False)
-    embed.add_field(name=">update",value="サーバーの更新情報を表示します。", inline=False)
+    embed.add_field(name=">update",value="botの更新情報を表示します。", inline=False)
     embed.set_footer(text="Powered by nekoy3" + version)
     return embed
 
@@ -312,7 +312,7 @@ def tutorial():
     embed.add_field(name="What is this?",value="このbotには「情報蓄積機能」があります。\n例えば、権限者が「apex_legends」という項目(カラムと呼びます)を追加し、\nユーザーがapex_legendsのカラムに自身のIDを登録することで、\n自身のIDを他者がinfoコマンドで閲覧できるようになります。", inline=False)
     embed.add_field(name="①自分をデータベースに登録する",value=">adduserコマンドを実行するだけで、infoコマンドで参照できるようになります。", inline=False)
     embed.add_field(name="②自分の情報(ゲームのフレンドコードやID)を登録する",value="「>mycolumnedit カラム名(ゲーム名) 自身の情報」で登録することができます。", inline=False)
-    embed.add_field(name="③他者の情報を参照する",value="「>info ユーザー名」で他者の情報を参照することができます。\nユーザー名を入力しない場合、自身の情報を参照します。", inline=False)
+    embed.add_field(name="③他者の情報を参照する",value="「>info ユーザー名」で他者の情報を参照することができます。\nユーザー名を入力しない場合、自身の情報を参照します。\nユーザー名はメンションするか、「example#0000」のように末尾4桁の数字を含めたIDを入力してください。」", inline=False)
     embed.add_field(name="ゲーム項目（カラム）の追加",value="権限者が「>addcolumn カラム名」を実行するだけで追加できるので、追加してもらうようにしましょう。\n「>columnlist」で現在登録できるカラムを参照できます。", inline=False)
     embed.set_footer(text="Powered by nekoy3" + version)
     return embed
@@ -552,7 +552,7 @@ async def on_message(message):
     
     # >update このbotの更新情報を取得する。
     elif message.content.startswith('>update'):
-        embed = add_embed("Update log", "このbotは" + str(version) + "です。")
+        embed = add_embed("Update log", "このbotは" + str(version) + "です。\n紹介記事\nhttps://nekoyama030330.seesaa.net/article/485032566.html")
         embed.add_field(name="v1.0.0('21/12/16)", value="初回リリース版", inline=False)
         await message.channel.send(embed=embed)
     
