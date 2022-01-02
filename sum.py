@@ -18,5 +18,5 @@ else:
 file = open(srcPath, 'r', encoding='utf-8').read().split('\n')
 for i in range(len(file)):
     list = file[i].split(' ')
-    sum = sum(list)
+    sum = sum(list.remove(list.startswith(';')))
     print(i + 1 + "行目の合計:" + sum)
