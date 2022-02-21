@@ -17,6 +17,14 @@ else:
 #ファイルの行ごとに分割してリストに格納する
 file = open(srcPath, 'r', encoding='utf-8').read().split('\n')
 for i in range(len(file)):
-    list = file[i].split(' ')
-    sum = sum(list.remove(list.startswith(';')))
-    print(i + 1 + "行目の合計:" + sum)
+    l = file[i].split(' ')
+    for j in range(len(l)):
+        try:
+            l[j] = "delete" if l[j].startswith(';') else int(l[j])
+        except:
+            print("数値以外が含まれています。")
+            exit()
+    l.remove("delete")
+    print(str(l))
+    s = sum(l)
+    print(str(i + 1) + "行目の合計:" + str(s))
