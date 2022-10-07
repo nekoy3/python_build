@@ -1,4 +1,4 @@
-Name:s.blue Obj:sarchplayer Score:0
+Name:s.blue Obj:sarchplayer Score:0 a
 Name:s3 Obj:s3 Score:3
 Name:s5 Obj:s5 Score:5
 Name:s7 Obj:s7 Score:7
